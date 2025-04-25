@@ -18,6 +18,20 @@ const controls = new OrbitControls( camera, renderer.domElement );
 const terrain = new Terrain(50,50); //largura do mapa
 scene.add(terrain);
 
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+let boneco;
+const loader = new GLTFLoader();
+
+loader.load('./models/boneco.glb', function (gltf) {
+    boneco = gltf.scene;
+    boneco.scale.set(1, 1, 1);
+    boneco.position.set(0, 0, 0);
+    scene.add(boneco);
+}, undefined, function (error) {
+    console.error('Erro ao carregar o boneco:', error);
+});
+
 
 
 const sun = new THREE.DirectionalLight();  //exemplo de luz
@@ -39,9 +53,32 @@ document.body.appendChild(stats.dom)
 camera.position.set(30,2,30);
 controls.update();
 
+const teclas = {};
+document.addEventListener('keydown', (e) => teclas[e.key] = true);
+document.addEventListener('keyup', (e) => teclas[e.key] = false);
+
 function animate() {
 
   controls.update();
+
+  if (boneco) {
+    const velocidade = 0.1;
+
+    if (teclas['w'] || teclas['W']) boneco.position.z -= velocidade;
+    if (teclas['s'] || teclas['S']) boneco.position.z += velocidade;
+    if (teclas['a'] || teclas['A']) boneco.position.x -= velocidade;
+    if (teclas['d'] || teclas['D']) boneco.position.x += velocidade;
+
+  }
+
+  if (boneco) {
+    const offset = new THREE.Vector3(0, 5, 10); // Posição da câmara em relação ao boneco
+    const bonecoPos = boneco.position.clone();
+    const cameraPos = bonecoPos.add(offset);
+    camera.position.lerp(cameraPos, 0.1); // Suaviza o movimento da câmara
+    camera.lookAt(boneco.position);
+  }
+  
 
   renderer.render( scene, camera );
 
