@@ -67,10 +67,10 @@ function getTamanhoHitbox(parte) {
     return {
         cabeça: [0.12, 0.18, 0.12],
         tronco: [0.25, 0.8, 0.25],
-        bracoE: [0.15, 0.5, 0.15],
-        bracoD: [0.15, 0.5, 0.15],
-        pernaE: [0.15, 0.65, 0.15],
-        pernaD: [0.15, 0.65, 0.15],
+        bracoE: [0.15, 0.8, 0.15],
+        bracoD: [0.15, 0.8, 0.15],
+        pernaE: [0.15, 1.2, 0.15],
+        pernaD: [0.15, 1.2, 0.15],
     }[parte];
 }
 
@@ -409,7 +409,7 @@ function atualizarInimigo(delta) {
     const distancia = boneco.position.distanceTo(inimigo.position);
     tempoUltimaAcaoInimigo += delta;
 
-    if (distancia > 1.5 && !emAcaoInimigo) {
+    if (distancia > 2 && !emAcaoInimigo) {
         const direcao = new THREE.Vector3().subVectors(boneco.position, inimigo.position).normalize();
         inimigo.position.add(direcao.multiplyScalar(0.05)); // reduzi um pouco a velocidade
         inimigo.lookAt(boneco.position);
