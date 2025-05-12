@@ -66,7 +66,7 @@ export class Terrain extends THREE.Mesh {
                 coords.y + 0.5
             );
             this.trees.add(treeMesh);
-
+            treeMesh.castShadow = true;
             this.#objectMap.set(`${coords.x}-${coords.y}`, treeMesh);
         }
     }
@@ -102,6 +102,7 @@ export class Terrain extends THREE.Mesh {
         );
             rockMesh.scale.y = height;
             this.rocks.add(rockMesh);
+            rockMesh.castShadow = true;
             this.#objectMap.set(`${coords.x}-${coords.y}`, rockMesh);
         }
     }
@@ -134,6 +135,7 @@ export class Terrain extends THREE.Mesh {
             coords.y + 0.5
         );
             this.bushes.add(bushMesh);
+            bushMesh.castShadow = true;
             this.#objectMap.set(`${coords.x}-${coords.y}`, bushMesh);
         }
     }
