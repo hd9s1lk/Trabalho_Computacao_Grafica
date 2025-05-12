@@ -22,16 +22,39 @@ const controls = new OrbitControls(camera, renderer.domElement);
 // Terreno
 const terrain = new Terrain(50, 50);
 scene.add(terrain);
+terrain.terrain.receiveShadow = true;
 
 // Luzes
-const sun = new THREE.DirectionalLight();
-sun.position.set(1, 2, 3);
-sun.intensity = 3;
-scene.add(sun);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-const ambient = new THREE.AmbientLight();
-ambient.intensity = 0.5;
+const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+sun.position.set(20, 40, 10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 100;
+sun.shadow.camera.left = -20;
+sun.shadow.camera.right = 20;
+sun.shadow.camera.top = 20;
+sun.shadow.camera.bottom = -20;
+sun.shadow.bias = -0.001; // tenta valores entre -0.0001 e -0.01
+
+scene.add(sun);
+scene.add(sun.target);
+
+const sunHelper = new THREE.DirectionalLightHelper(sun, 5);
+scene.add(sunHelper);
+
+const ambient = new THREE.AmbientLight(0x404060, 0.7);
 scene.add(ambient);
+
+const fillLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 0.5);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0x99ccff, 0.8);
+rimLight.position.set(-10, 10, -10);
+scene.add(rimLight);
 
 // Nevoeiro
 scene.fog = new THREE.Fog(0xcccccc, 10, 50);
@@ -78,98 +101,120 @@ function getTamanhoHitbox(parte) {
 // Loader
 const loader = new GLTFLoader();
 
-loader.load('./models/ninja.glb', function (gltf) {
-    boneco = gltf.scene;
-    boneco.scale.set(1, 1, 1);
-    boneco.position.set(0, 0, 0);
-    scene.add(boneco);
+loader.load(
+    './models/ninja.glb',
+    function (gltf) {
+        boneco = gltf.scene;
+        boneco.scale.set(1, 1, 1);
+        boneco.position.set(0, 0, 0);
+        scene.add(boneco);
 
-    mixer = new THREE.AnimationMixer(boneco);
-    gltf.animations.forEach((clip) => {
-        animations[clip.name] = mixer.clipAction(clip);
-    });
-    if (animations['idle']) animations['idle'].play();
+        mixer = new THREE.AnimationMixer(boneco);
+        gltf.animations.forEach((clip) => {
+            animations[clip.name] = mixer.clipAction(clip);
+        });
+        if (animations['idle']) animations['idle'].play();
 
-    const bonesDeHitbox = {
-        cabeça: 'mixamorigHead',
-        tronco: 'mixamorigSpine',
-        bracoE: 'mixamorigLeftForeArm',
-        bracoD: 'mixamorigRightForeArm',
-        pernaE: 'mixamorigLeftLeg',
-        pernaD: 'mixamorigRightLeg'
-    };
+        const bonesDeHitbox = {
+            cabeça: 'mixamorigHead',
+            tronco: 'mixamorigSpine',
+            bracoE: 'mixamorigLeftForeArm',
+            bracoD: 'mixamorigRightForeArm',
+            pernaE: 'mixamorigLeftLeg',
+            pernaD: 'mixamorigRightLeg'
+        };
 
-    const materialHitbox = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const materialHitbox = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
-    boneco.traverse((obj) => {
-        if (obj.isBone && bonesDeHitbox) {
-            for (const [parte, nomeBone] of Object.entries(bonesDeHitbox)) {
-                if (obj.name === nomeBone) {
-                    const tamanho = getTamanhoHitbox(parte);
-                    const cuboDebug = new THREE.Mesh(new THREE.BoxGeometry(...tamanho), materialHitbox);
-                    cuboDebug.name = 'hitbox_' + parte;
-                    obj.updateWorldMatrix(true, false);
-                    obj.getWorldPosition(cuboDebug.position);
-                    cuboDebug.visible = true;
+        boneco.traverse((obj) => {
+            if (obj.isBone && bonesDeHitbox) {
+                for (const [parte, nomeBone] of Object.entries(bonesDeHitbox)) {
+                    if (obj.name === nomeBone) {
+                        const tamanho = getTamanhoHitbox(parte);
+                        const cuboDebug = new THREE.Mesh(new THREE.BoxGeometry(...tamanho), materialHitbox);
+                        cuboDebug.name = 'hitbox_' + parte;
+                        obj.updateWorldMatrix(true, false);
+                        obj.getWorldPosition(cuboDebug.position);
+                        cuboDebug.visible = true;
 
-                    scene.add(cuboDebug);
-                    hitboxJogador[parte] = cuboDebug;
-                    todasHitboxes.push(cuboDebug);
+                        scene.add(cuboDebug);
+                        hitboxJogador[parte] = cuboDebug;
+                        todasHitboxes.push(cuboDebug);
+                    }
                 }
             }
-        }
-    });
+        });
 
-}, undefined, console.error);
-
-// Inimigo
-loader.load('./models/creed.glb', function (gltf) {
-    inimigo = gltf.scene;
-    inimigo.scale.set(1, 1, 1);
-    inimigo.position.set(5, 0, 0);
-    scene.add(inimigo);
-
-    mixerInimigo = new THREE.AnimationMixer(inimigo);
-    gltf.animations.forEach((clip) => {
-        animationsInimigo[clip.name] = mixerInimigo.clipAction(clip);
-    });
-
-    const idle = animationsInimigo['idle'];
-    if (idle) idle.reset().fadeIn(0.2).play();
-
-    const materialHitbox = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
-    const bonesDeHitbox = {
-        cabeça: 'mixamorigHead',
-        tronco: 'mixamorigSpine',
-        bracoE: 'mixamorigLeftForeArm',
-        bracoD: 'mixamorigRightForeArm',
-        pernaE: 'mixamorigLeftLeg',
-        pernaD: 'mixamorigRightLeg'
-    };
-
-    inimigo.traverse((obj) => {
-    if (obj.isBone) {
-        for (const [parte, nomeBone] of Object.entries(bonesDeHitbox)) {
-            if (obj.name === nomeBone) {
-                const tamanho = getTamanhoHitbox(parte);
-                const hitbox = new THREE.Mesh(new THREE.BoxGeometry(...tamanho), materialHitbox);
-                hitbox.name = 'hitbox_inimigo_' + parte;
-                hitbox.visible = true;
-
-                obj.updateWorldMatrix(true, false);
-                obj.getWorldPosition(hitbox.position);
-                obj.getWorldQuaternion(hitbox.quaternion);
-
-                scene.add(hitbox);
-                hitboxInimigo[parte] = hitbox;
-                todasHitboxes.push(hitbox);
+        boneco.traverse((child) => {
+            if (child.isMesh || child.isSkinnedMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
             }
-        }
-    }
-});
+        });
+    },
+    undefined,
+    console.error
+);
 
 
-}, undefined, console.error);
+// Carregar inimigo
+loader.load(
+    './models/creed.glb',
+    function (gltf) {
+        inimigo = gltf.scene;
+        inimigo.scale.set(1, 1, 1);
+        inimigo.position.set(5, 0, 0);
+        scene.add(inimigo);
+
+        inimigo.traverse((child) => {
+            if (child.isMesh || child.isSkinnedMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+
+        mixerInimigo = new THREE.AnimationMixer(inimigo);
+        gltf.animations.forEach((clip) => {
+            animationsInimigo[clip.name] = mixerInimigo.clipAction(clip);
+        });
+
+        const idle = animationsInimigo['idle'];
+        if (idle) idle.reset().fadeIn(0.2).play();
+
+        const materialHitbox = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
+        const bonesDeHitbox = {
+            cabeça: 'mixamorigHead',
+            tronco: 'mixamorigSpine',
+            bracoE: 'mixamorigLeftForeArm',
+            bracoD: 'mixamorigRightForeArm',
+            pernaE: 'mixamorigLeftLeg',
+            pernaD: 'mixamorigRightLeg'
+        };
+
+        inimigo.traverse((obj) => {
+            if (obj.isBone) {
+                for (const [parte, nomeBone] of Object.entries(bonesDeHitbox)) {
+                    if (obj.name === nomeBone) {
+                        const tamanho = getTamanhoHitbox(parte);
+                        const hitbox = new THREE.Mesh(new THREE.BoxGeometry(...tamanho), materialHitbox);
+                        hitbox.name = 'hitbox_inimigo_' + parte;
+                        hitbox.visible = true;
+
+                        obj.updateWorldMatrix(true, false);
+                        obj.getWorldPosition(hitbox.position);
+                        obj.getWorldQuaternion(hitbox.quaternion);
+
+                        scene.add(hitbox);
+                        hitboxInimigo[parte] = hitbox;
+                        todasHitboxes.push(hitbox);
+                    }
+                }
+            }
+        });
+    },
+    undefined,
+    console.error
+);
 
 // Clock
 const clock = new THREE.Clock();
@@ -394,6 +439,7 @@ function animate() {
         boneco.lookAt(inimigo.position);
     }
 
+
     renderer.render(scene, camera);
     stats.update();
     document.getElementById('vidaInimigo').innerText = `Vida Inimigo: ${vidaInimigo}`;
@@ -465,3 +511,14 @@ Terrainfolder.addColor(terrain.terrain.material, 'color').name('Color');
 Terrainfolder.onChange(() => {
     terrain.createTerrain();
 });
+
+// GUI Luz
+const sunFolder = gui.addFolder('Sun Light');
+sunFolder.add(sun.position, 'x', -100, 100, 0.1).name('Pos X');
+sunFolder.add(sun.position, 'y', -100, 100, 0.1).name('Pos Y');
+sunFolder.add(sun.position, 'z', -100, 100, 0.1).name('Pos Z');
+sunFolder.add(sun, 'intensity', 0, 5, 0.1).name('Intensity');
+sunFolder.addColor({ color: sun.color.getHex() }, 'color')
+    .name('Color')
+    .onChange((val) => sun.color.set(val));
+
