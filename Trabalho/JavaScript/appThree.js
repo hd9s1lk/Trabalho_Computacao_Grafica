@@ -52,6 +52,10 @@ let emAcaoInimigo = false;
 let vidaInimigo = 100;
 let cooldownHit = false;
 
+let vidaJogador = 100;
+let cooldownHitJogador = false;
+
+
 
 // Hitboxes
 const hitboxJogador = {};
@@ -266,6 +270,16 @@ function verificarColisao(obj1, obj2) {
 function verificarHitJogadorNoInimigo() {
     if (cooldownHit) return false;
 
+    // Apenas cause dano se estiver numa animação de ataque
+    const animacoesDeAtaque = ['punch', 'elbow', 'hammer_kick'];
+    if (!animacoesDeAtaque.includes(estadoAtual)) return false;
+
+    // Se o inimigo estiver bloqueando, não recebe dano
+    if (estadoInimigoAtual === 'block' || estadoInimigoAtual === 'block_head'){
+        mostrarMensagem("BLOCK!");
+        return false;
+    }
+
     const ofensivos = ['bracoE', 'bracoD', 'pernaE', 'pernaD'];
     const vulneraveis = ['tronco', 'cabeça'];
 
@@ -285,12 +299,63 @@ function verificarHitJogadorNoInimigo() {
                     iniciarAcaoInimigo('dying');
                 }
 
+                mostrarMensagem("HIT:10");
                 return true;
             }
         }
     }
     return false;
 }
+
+
+function mostrarMensagem(msg) {
+    const mensagemDiv = document.getElementById('mensagemHitBlock');
+    mensagemDiv.innerHTML = msg;
+    mensagemDiv.style.visibility = 'visible';
+    setTimeout(() => {
+        mensagemDiv.style.visibility = 'hidden';
+    }, 1000);  // A mensagem desaparece após 1 segundo
+}
+
+function verificarHitInimigoNoJogador() {
+    if (cooldownHitJogador) return false;
+
+    const animacoesDeAtaqueInimigo = ['punch', 'kick'];
+    if (!animacoesDeAtaqueInimigo.includes(estadoInimigoAtual)) return false;
+
+    // Se o jogador estiver bloqueando, não recebe dano
+    if (estadoAtual === 'block' || estadoAtual === 'block_head') {
+        mostrarMensagem("BLOCK!");
+        return false;
+    }
+
+    const ofensivos = ['bracoE', 'bracoD', 'pernaE', 'pernaD'];
+    const vulneraveis = ['tronco', 'cabeça'];
+
+    for (const parteAtacante of ofensivos) {
+        for (const parteAlvo of vulneraveis) {
+            const atacante = hitboxInimigo[parteAtacante];
+            const alvo = hitboxJogador[parteAlvo];
+            if (atacante && alvo && verificarColisao(atacante, alvo)) {
+                vidaJogador -= 10;
+                console.log(`😵 HIT: Inimigo com ${parteAtacante} no ${parteAlvo} ➝ Vida Jogador: ${vidaJogador}`);
+                alvo.material.color.set(0xff0000);
+
+                cooldownHitJogador = true;
+                setTimeout(() => cooldownHitJogador = false, 1500);
+
+                if (vidaJogador <= 0) {
+                    iniciarAcao('dying');
+                }
+
+                    mostrarMensagem("Hit:10")
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 
 
 function animate() {
@@ -325,29 +390,39 @@ function animate() {
 
     if (boneco && inimigo) {
         verificarHitJogadorNoInimigo();
+        verificarHitInimigoNoJogador();
         boneco.lookAt(inimigo.position);
     }
 
     renderer.render(scene, camera);
     stats.update();
     document.getElementById('vidaInimigo').innerText = `Vida Inimigo: ${vidaInimigo}`;
-
+    document.getElementById('vidaJogador').innerText = `Vida Jogador: ${vidaJogador}`;
 }
+
+let tempoUltimaAcaoInimigo = 0;
+const intervaloEntreAcoes = 2; // segundos
 
 function atualizarInimigo(delta) {
     if (!boneco || !inimigo) return;
 
     const distancia = boneco.position.distanceTo(inimigo.position);
-    if (distancia > 2 && !emAcaoInimigo) {
+    tempoUltimaAcaoInimigo += delta;
+
+    if (distancia > 1.5 && !emAcaoInimigo) {
         const direcao = new THREE.Vector3().subVectors(boneco.position, inimigo.position).normalize();
-        inimigo.position.add(direcao.multiplyScalar(0.1));
+        inimigo.position.add(direcao.multiplyScalar(0.05)); // reduzi um pouco a velocidade
         inimigo.lookAt(boneco.position);
+
         if (estadoInimigoAtual !== 'walk') trocaAnimacaoInimigo('walk');
-    } else if (!emAcaoInimigo && estadoInimigoAtual !== 'idle') {
+    } else if (tempoUltimaAcaoInimigo >= intervaloEntreAcoes && !emAcaoInimigo) {
         const acoes = ['punch', 'kick', 'block'];
-        iniciarAcaoInimigo(acoes[Math.floor(Math.random() * acoes.length)]);
+        const acaoEscolhida = acoes[Math.floor(Math.random() * acoes.length)];
+        iniciarAcaoInimigo(acaoEscolhida);
+        tempoUltimaAcaoInimigo = 0;
     }
 }
+
 
 function trocaAnimacaoInimigo(nome) {
     if (!inimigo || !mixerInimigo) return;
