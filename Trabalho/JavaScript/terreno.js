@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 
+
 export class Terrain extends THREE.Mesh {
     #objectMap = new Map();   //variável privada para verificar spawn diferentes de arvores, arbustos e rochas
 
@@ -17,6 +18,7 @@ export class Terrain extends THREE.Mesh {
         //this.createRocks();
         //this.createBushes();
         this.createTorii();
+        this.createWalls();
 
         console.log(this.#objectMap);
     }
@@ -104,7 +106,47 @@ export class Terrain extends THREE.Mesh {
             rockMesh.castShadow = true;
             this.#objectMap.set(`${coords.x}-${coords.y}`, rockMesh);
         }
-    }
+    }    
+    
+    createWalls() {
+    const wallHeight = 5;
+    const wallThickness = 0.5;
+
+    // Carrega a textura
+    const textureLoader = new THREE.TextureLoader();
+    const wallTexture = textureLoader.load('models/wall.jpg');
+    wallTexture.wrapS = THREE.RepeatWrapping;
+    wallTexture.wrapT = THREE.RepeatWrapping;
+    wallTexture.repeat.set(5, 1); // Ajusta conforme necessário
+
+    const wallMaterial = new THREE.MeshStandardMaterial({
+        map: wallTexture,
+    });
+
+    // Geometrias
+    const wallGeometryVertical = new THREE.BoxGeometry(wallThickness, wallHeight, this.height);
+    const wallGeometryHorizontal = new THREE.BoxGeometry(this.width, wallHeight, wallThickness);
+
+    // Paredes com material com textura
+    const leftWall = new THREE.Mesh(wallGeometryVertical, wallMaterial);
+    leftWall.position.set(-this.width / 2, wallHeight / 2, 0);
+    this.add(leftWall);
+
+    const rightWall = new THREE.Mesh(wallGeometryVertical, wallMaterial);
+    rightWall.position.set(this.width / 2, wallHeight / 2, 0);
+    this.add(rightWall);
+
+    const frontWall = new THREE.Mesh(wallGeometryHorizontal, wallMaterial);
+    frontWall.position.set(0, wallHeight / 2, -this.height / 2);
+    this.add(frontWall);
+
+    const backWall = new THREE.Mesh(wallGeometryHorizontal, wallMaterial);
+    backWall.position.set(0, wallHeight / 2, this.height / 2);
+    this.add(backWall);
+
+    return { leftWall, rightWall, frontWall, backWall };
+}
+
 
     createBushes() {
         const minBushRadius = 0.1;
