@@ -435,7 +435,9 @@ function verificarHitJogadorNoInimigo() {
 
                 if (vidaInimigo <= 0) {
                     iniciarAcaoInimigo('dying');
+                    mostrarGameOver("Vitória!");
                 }
+
 
                 mostrarMensagem("HIT:10");
                 return true;
@@ -484,7 +486,9 @@ function verificarHitInimigoNoJogador() {
 
                 if (vidaJogador <= 0) {
                     iniciarAcao('dying');
+                    mostrarGameOver("Derrota!");
                 }
+
 
                     mostrarMensagem("Hit:10")
                 return true;
@@ -493,6 +497,17 @@ function verificarHitInimigoNoJogador() {
     }
     return false;
 }
+
+let gameOver = false;
+
+function mostrarGameOver(texto) {
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const gameOverText = document.getElementById('gameOverText');
+    gameOverText.innerText = texto;
+    gameOverScreen.style.visibility = 'visible';
+    gameOver = true;
+}
+
 
 
 
@@ -537,6 +552,12 @@ function animate() {
     stats.update();
     document.getElementById('vidaInimigo').innerText = `Vida Inimigo: ${vidaInimigo}`;
     document.getElementById('vidaJogador').innerText = `Vida Jogador: ${vidaJogador}`;
+
+    if (gameOver) {
+    renderer.render(scene, camera);
+    return;
+}
+
 }
 
 let tempoUltimaAcaoInimigo = 0;
