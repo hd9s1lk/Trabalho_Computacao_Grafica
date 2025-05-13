@@ -26,6 +26,9 @@ terrain.terrain.receiveShadow = true;
 
 scene.background = new THREE.Color(0xadd8e6);
 
+// Luzes
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 // Luzes
 renderer.shadowMap.enabled = true;
