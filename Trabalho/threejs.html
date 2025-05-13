@@ -39,6 +39,30 @@
             </div>
 
 
+            <div id="gameOverScreen" style="
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 3rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            visibility: hidden;
+            z-index: 9999;
+            ">
+            <div id="gameOverText">Game Over</div>
+            <button onclick="window.location.reload()" style="
+                margin-top: 20px;
+                padding: 10px 20px;
+                font-size: 1.5rem;
+                cursor: pointer;
+            ">Recomeçar</button>
+            </div>
+
 
     </body>
 
