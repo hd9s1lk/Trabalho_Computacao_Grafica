@@ -15,6 +15,31 @@
     <script src="./JavaScript/appThree.js" type="module"></script>
     </head>
     <body>
+        <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 50px; font-size: 20px; z-index: 100;">
+        <div id="vidaJogador" style="color: green;">Vida Jogador: 100</div>
+        <div id="vidaInimigo" style="color: red;">Vida Inimigo: 100</div>
+        </div>
+
+        <!-- Coloque isso dentro do <body> do seu HTML -->
+            <div id="mensagemHitBlock" style="
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 24px;
+                color: white;
+                background-color: rgba(0, 0, 0, 0.75);
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 9999;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+            ">
+                <!-- Mensagem dinâmica será exibida aqui -->
+            </div>
+
+
+
     </body>
 
 </html>
