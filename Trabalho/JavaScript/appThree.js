@@ -84,6 +84,8 @@ let cooldownHit = false;
 let vidaJogador = 100;
 let cooldownHitJogador = false;
 
+window.jogoIniciado = false;
+
 
 
 // Hitboxes
@@ -513,6 +515,11 @@ function mostrarGameOver(texto) {
 
 function animate() {
     const delta = clock.getDelta();
+
+    if (!window.jogoIniciado) {
+    return; // Sai da função se o jogo ainda não começou
+  }
+  
     if (mixer) mixer.update(delta);
     if (mixerInimigo) {
         mixerInimigo.update(delta);

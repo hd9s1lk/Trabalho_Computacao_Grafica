@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html>
-    <head>
-    <title>
-        WebGL - Three.js
-    </title>
-    <script type="importmap"> 
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL - Three.js</title>
+    <script type="importmap">
         {
             "imports": {
                 "three": "https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js",
@@ -13,57 +13,136 @@
         }
     </script>
     <script src="./JavaScript/appThree.js" type="module"></script>
-    </head>
-    <body>
-        <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 50px; font-size: 20px; z-index: 100;">
+</head>
+<body>
+    <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 50px; font-size: 20px; z-index: 100;">
         <div id="vidaJogador" style="color: green;">Vida Jogador: 100</div>
         <div id="vidaInimigo" style="color: red;">Vida Inimigo: 100</div>
+    </div>
+
+    <!-- Mensagem de hit/block -->
+    <div id="mensagemHitBlock" style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); font-size: 24px; color: white; background-color: rgba(0, 0, 0, 0.75); padding: 12px 20px; border-radius: 8px; z-index: 9999; visibility: hidden; transition: opacity 0.3s ease;">
+        <!-- Mensagem dinâmica será exibida aqui -->
+    </div>
+
+    <!-- Tela de Game Over -->
+    <div id="gameOverScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); color: white; font-size: 3rem; display: flex; justify-content: center; align-items: center; flex-direction: column; visibility: hidden; z-index: 9999;">
+        <div id="gameOverText">Game Over</div>
+        <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; font-size: 1.5rem; cursor: pointer;">Recomeçar</button>
+    </div>
+
+    <!-- Menu inicial do jogo -->
+    <div id="menuInicial" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: url('images/light.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;">
+        <h1 style="font-size: 3rem; margin-bottom: 2rem;">kira                          vs                          Creed</h1>
+        <div id="cenariosModelos" style="width: 100%; height: 400px; display: flex; justify-content: space-around; align-items: center;">
+            <div id="modelo1" style="width: 40%; height: 100%;"></div>
+            <div style="font-size: 3em; color: white;">VS</div>
+            <div id="modelo2" style="width: 40%; height: 100%;"></div>
         </div>
+        <button id="botaoIniciar" style="font-size: 1.5rem; padding: 1rem 2rem; cursor: pointer; background-color: #28a745; color: white; border: none; border-radius: 10px; transition: background-color 0.3s; margin-top: 30px;">Iniciar Jogo</button>
+    </div>
 
-        <!-- Coloque isso dentro do <body> do seu HTML -->
-            <div id="mensagemHitBlock" style="
-                position: fixed;
-                top: 80px;
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 24px;
-                color: white;
-                background-color: rgba(0, 0, 0, 0.75);
-                padding: 12px 20px;
-                border-radius: 8px;
-                z-index: 9999;
-                visibility: hidden;
-                transition: opacity 0.3s ease;
-            ">
-                <!-- Mensagem dinâmica será exibida aqui -->
-            </div>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js';
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.173.0/examples/jsm/loaders/GLTFLoader.js';
 
+        const loader = new GLTFLoader();
 
-            <div id="gameOverScreen" style="
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            font-size: 3rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            visibility: hidden;
-            z-index: 9999;
-            ">
-            <div id="gameOverText">Game Over</div>
-            <button onclick="window.location.reload()" style="
-                margin-top: 20px;
-                padding: 10px 20px;
-                font-size: 1.5rem;
-                cursor: pointer;
-            ">Recomeçar</button>
-            </div>
+        // Função para criar o renderer
+        function criarRendererMenu(divDestino) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, divDestino.clientWidth / divDestino.clientHeight, 0.1, 1000);
+            camera.position.set(0, 1.5, 3);
 
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(divDestino.clientWidth, divDestino.clientHeight);
+            divDestino.appendChild(renderer.domElement);
 
-    </body>
+            // Luz direcional para destacar os modelos
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(0, 2, 2);
+            scene.add(directionalLight);
 
+            // Luz ambiente suave para complementar
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+
+            return { scene, camera, renderer };
+        }
+
+        // Criando renderers para os dois modelos
+        const render1 = criarRendererMenu(document.getElementById('modelo1'));
+        const render2 = criarRendererMenu(document.getElementById('modelo2'));
+
+        let mixer1, mixer2;
+
+        // Carregar o primeiro modelo
+        loader.load('models/ninja.glb', function (gltf) {
+            const model = gltf.scene;
+            render1.scene.add(model);
+
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = false;
+                    child.receiveShadow = false;
+                    // Adicionando emissividade (brilho) ao modelo
+                    if (child.material) {
+                        child.material.emissive = new THREE.Color(0x111111); // Brilho suave
+                        child.material.emissiveIntensity = 2; // Intensidade do brilho
+                    }
+                }
+            });
+
+            mixer1 = new THREE.AnimationMixer(model);
+            const idleAnim = gltf.animations.find(a => a.name.toLowerCase().includes('idle'));
+            if (idleAnim) mixer1.clipAction(idleAnim).play();
+        });
+
+        // Carregar o segundo modelo
+        loader.load('models/creed.glb', function (gltf) {
+            const model = gltf.scene;
+            render2.scene.add(model);
+
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = false;
+                    child.receiveShadow = false;
+                    // Adicionando emissividade (brilho) ao modelo
+                    if (child.material) {
+                        child.material.emissive = new THREE.Color(0x111111); // Brilho suave
+                        child.material.emissiveIntensity = 2; // Intensidade do brilho
+                    }
+                }
+            });
+
+            mixer2 = new THREE.AnimationMixer(model);
+            const idleAnim = gltf.animations.find(a => a.name.toLowerCase().includes('idle'));
+            if (idleAnim) mixer2.clipAction(idleAnim).play();
+        });
+
+        const clock = new THREE.Clock();
+
+        // Função de animação
+        function animateMenu() {
+            requestAnimationFrame(animateMenu);
+
+            const delta = clock.getDelta();
+            if (mixer1) mixer1.update(delta);
+            if (mixer2) mixer2.update(delta);
+
+            render1.renderer.render(render1.scene, render1.camera);
+            render2.renderer.render(render2.scene, render2.camera);
+        }
+
+        animateMenu();
+
+        // Iniciar o jogo ao clicar no botão
+        document.getElementById('botaoIniciar').addEventListener('click', () => {
+            document.getElementById('menuInicial').style.display = 'none';
+
+            // Agora começa o jogo!
+            window.jogoIniciado = true;
+        });
+    </script>
+</body>
 </html>
