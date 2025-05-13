@@ -13,9 +13,9 @@ export class Terrain extends THREE.Mesh {
         this.toriiCount = 1;
 
         this.createTerrain();
-        this.createTrees();
-        this.createRocks();
-        this.createBushes();
+        //this.createTrees();
+        //this.createRocks();
+        //this.createBushes();
         this.createTorii();
 
         console.log(this.#objectMap);

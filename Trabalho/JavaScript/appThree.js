@@ -24,6 +24,12 @@ const terrain = new Terrain(50, 50);
 scene.add(terrain);
 terrain.terrain.receiveShadow = true;
 
+scene.background = new THREE.Color(0xadd8e6);
+
+// Luzes
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 // Luzes
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -215,6 +221,93 @@ loader.load(
     undefined,
     console.error
 );
+
+const treeLoader = new GLTFLoader();
+
+// Função para gerar uma posição aleatória dentro dos limites do mapa
+function getRandomPosition() {
+    // Defina os limites do mapa (ajuste conforme necessário)
+    const mapWidth = 50;  // Largura do mapa
+    const mapHeight = 50; // Altura do mapa
+
+    const x = Math.random() * mapWidth - (mapWidth / 2);  // Posicionamento aleatório no eixo X
+    const z = Math.random() * mapHeight - (mapHeight / 2);  // Posicionamento aleatório no eixo Z
+
+    // Retorna a posição aleatória
+    return new THREE.Vector3(x, 0, z);
+}
+
+treeLoader.load('./models/quick_treeit_tree.glb', (gltf) => {
+    for (let i = 0; i < 20; i++) {
+        const tree = gltf.scene.clone(); // Clona o modelo para cada árvore
+
+        // Define a escala da árvore
+        tree.traverse(c => {
+            c.castShadow = true;
+            c.scale.set(0.5, 0.5, 0.5);
+        });
+
+        // Define uma posição aleatória para cada árvore
+        const position = getRandomPosition();
+        tree.position.set(position.x, 0, position.z);  // A posição Y é 0, você pode ajustá-la conforme necessário
+
+        // Adiciona a árvore à cena
+        scene.add(tree);
+    }
+});
+
+//carregar cadaver
+const loaderRemains = new GLTFLoader();
+loader.load('./models/remains.glb', (gltf) => {
+    gltf.scene.traverse(c => {
+        c.castShadow = true;
+        c.scale.set(0.85,0.85,0.85);
+        c.position.set(2,0,0);
+    });
+    scene.add(gltf.scene);
+})
+
+const loaderBushes = new GLTFLoader();
+loaderBushes.load('./models/bush.glb', (gltf) => {
+    for (let i = 0; i < 20; i++) {
+        const bush = gltf.scene.clone(); // Clona o modelo para cada arbusto
+
+        // Define a escala do arbusto
+        bush.traverse(c => {
+            c.castShadow = true;
+            c.scale.set(0.8, 0.8, 0.8);
+        });
+
+        // Define uma posição aleatória para cada árvore
+        const position = getRandomPosition();
+        bush.position.set(position.x, 3.5, position.z);  // A posição Y é 0, você pode ajustá-la conforme necessário
+
+        // Adiciona o arbusto à cena
+        scene.add(bush);
+    }
+});
+
+const loaderRocks = new GLTFLoader();
+loaderRocks.load('./models/stylized_rocks.glb', (gltf) => {
+    for(let i = 0; i< 10; i++){
+        const rock = gltf.scene.clone(); // Clona o modelo para cada rocha
+
+        // Define a escala da rocha
+        rock.traverse(c => {
+            c.castShadow = true;
+            c.scale.set(0.8, 0.8, 0.8);
+        });
+
+        // Define uma posição aleatória para cada rocha
+        const position = getRandomPosition();
+        rock.position.set(position.x, 0, position.z);  // A posição Y é 0, você pode ajustá-la conforme necessário
+
+        // Adiciona a rocha à cena
+        scene.add(rock);
+    }
+});
+
+
 
 // Clock
 const clock = new THREE.Clock();
