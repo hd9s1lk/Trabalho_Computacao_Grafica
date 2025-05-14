@@ -1,4 +1,4 @@
-    import * as THREE from 'three';
+import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import Stats from 'three/addons/libs/stats.module.js';
     import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -368,13 +368,6 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         }
     });
 
-const loaderBirds = new GLTFLoader();
-loaderBirds.load('./models/bird.glb', (gltf) => {
-    gltf.scene.traverse(c => {
-        c.castShadow = true;
-    });
-    scene.add(birds);
-});
 
     // Clock
     const clock = new THREE.Clock();
@@ -592,23 +585,47 @@ loaderBirds.load('./models/bird.glb', (gltf) => {
         }
 
         if (boneco) {
-            let aAndar = false;
+    let aAndar = false;
 
-            if (teclas['w'] || teclas['W']) { boneco.position.z -= 0.1; aAndar = true; }
-            if (teclas['s'] || teclas['S']) { boneco.position.z += 0.1; aAndar = true; }
-            if (teclas['a'] || teclas['A']) { boneco.position.x -= 0.1; aAndar = true; }
-            if (teclas['d'] || teclas['D']) { boneco.position.x += 0.1; aAndar = true; }
-
-            if (!emAcao && (estadoAtual === 'idle' || estadoAtual === 'walk')) {
-                if (aAndar) trocaAnimacao('walk');
-                else trocaAnimacao('idle');
-            }
-
-            const offset = new THREE.Vector3(-1, 2, 5);
-            const cameraTarget = boneco.position.clone().add(offset);
-            activeCamera.position.lerp(cameraTarget, 0.1);
-            activeCamera.lookAt(boneco.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
+    if (teclas['w'] || teclas['W']) {
+        const newZ = boneco.position.z - 0.1;
+        if (newZ >= terrainLimits.minZ) {
+            boneco.position.z = newZ;
+            aAndar = true;
         }
+    }
+    if (teclas['s'] || teclas['S']) {
+        const newZ = boneco.position.z + 0.1;
+        if (newZ <= terrainLimits.maxZ) {
+            boneco.position.z = newZ;
+            aAndar = true;
+        }
+    }
+    if (teclas['a'] || teclas['A']) {
+        const newX = boneco.position.x - 0.1;
+        if (newX >= terrainLimits.minX) {
+            boneco.position.x = newX;
+            aAndar = true;
+        }
+    }
+    if (teclas['d'] || teclas['D']) {
+        const newX = boneco.position.x + 0.1;
+        if (newX <= terrainLimits.maxX) {
+            boneco.position.x = newX;
+            aAndar = true;
+        }
+    }
+
+    if (!emAcao && (estadoAtual === 'idle' || estadoAtual === 'walk')) {
+        if (aAndar) trocaAnimacao('walk');
+        else trocaAnimacao('idle');
+    }
+
+    const offset = new THREE.Vector3(-1, 2, 5);
+    const cameraTarget = boneco.position.clone().add(offset);
+    activeCamera.position.lerp(cameraTarget, 0.1);
+    activeCamera.lookAt(boneco.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
+}
 
         if (boneco) atualizarHitboxesJogador();
         if (inimigo) atualizarHitboxesInimigo();
@@ -643,7 +660,18 @@ loaderBirds.load('./models/bird.glb', (gltf) => {
 
         if (distancia > 2 && !emAcaoInimigo) {
             const direcao = new THREE.Vector3().subVectors(boneco.position, inimigo.position).normalize();
-            inimigo.position.add(direcao.multiplyScalar(0.05)); // reduzi um pouco a velocidade
+            const newPosition = inimigo.position.clone().add(direcao.multiplyScalar(0.05));
+
+            // Verificar se a nova posição está dentro dos limites
+            if (
+                newPosition.x >= terrainLimits.minX &&
+                newPosition.x <= terrainLimits.maxX &&
+                newPosition.z >= terrainLimits.minZ &&
+                newPosition.z <= terrainLimits.maxZ
+            ) {
+                inimigo.position.copy(newPosition);
+            }
+
             inimigo.lookAt(boneco.position);
 
             if (estadoInimigoAtual !== 'walk') trocaAnimacaoInimigo('walk');
@@ -707,4 +735,11 @@ loaderBirds.load('./models/bird.glb', (gltf) => {
     sunFolder.addColor({ color: sun.color.getHex() }, 'color')
         .name('Color')
         .onChange((val) => sun.color.set(val));
+
+    const terrainLimits = {
+    minX: -25, // Metade negativa da largura do terreno
+    maxX: 25,  // Metade positiva da largura do terreno
+    minZ: -25, // Metade negativa da altura do terreno
+    maxZ: 25   // Metade positiva da altura do terreno
+};
 
