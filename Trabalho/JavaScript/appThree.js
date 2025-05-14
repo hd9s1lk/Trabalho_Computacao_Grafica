@@ -1,4 +1,4 @@
-    import * as THREE from 'three';
+import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import Stats from 'three/addons/libs/stats.module.js';
     import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -64,9 +64,6 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // Luzes
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     const sun = new THREE.DirectionalLight(0xffffff, 1.5);
     sun.position.set(20, 40, 10);
@@ -95,6 +92,34 @@
     const rimLight = new THREE.DirectionalLight(0x99ccff, 0.8);
     rimLight.position.set(-10, 10, -10);
     scene.add(rimLight);
+
+    // Referências às luzes
+const directionalLights = [sun, rimLight];
+const hemisphereLight = fillLight;
+const ambientLight = ambient;
+
+// Estado atual das luzes
+let ambientOn = true;
+let directionalOn = true;
+let hemisphereOn = true;
+
+// Event Listeners para os botões
+document.getElementById('toggleAmbient').addEventListener('click', () => {
+    ambientOn = !ambientOn;
+    ambientLight.visible = ambientOn;
+});
+
+document.getElementById('toggleDirectional').addEventListener('click', () => {
+    directionalOn = !directionalOn;
+    directionalLights.forEach(light => light.visible = directionalOn);
+    sunHelper.visible = directionalOn; // Também esconde o helper
+});
+
+document.getElementById('toggleHemisphere').addEventListener('click', () => {
+    hemisphereOn = !hemisphereOn;
+    hemisphereLight.visible = hemisphereOn;
+});
+
 
     // Nevoeiro
     scene.fog = new THREE.Fog(0xcccccc, 10, 50);
@@ -344,7 +369,6 @@
     });
 
 
-
     // Clock
     const clock = new THREE.Clock();
 
@@ -561,23 +585,47 @@
         }
 
         if (boneco) {
-            let aAndar = false;
+    let aAndar = false;
 
-            if (teclas['w'] || teclas['W']) { boneco.position.z -= 0.1; aAndar = true; }
-            if (teclas['s'] || teclas['S']) { boneco.position.z += 0.1; aAndar = true; }
-            if (teclas['a'] || teclas['A']) { boneco.position.x -= 0.1; aAndar = true; }
-            if (teclas['d'] || teclas['D']) { boneco.position.x += 0.1; aAndar = true; }
-
-            if (!emAcao && (estadoAtual === 'idle' || estadoAtual === 'walk')) {
-                if (aAndar) trocaAnimacao('walk');
-                else trocaAnimacao('idle');
-            }
-
-            const offset = new THREE.Vector3(-1, 2, 5);
-            const cameraTarget = boneco.position.clone().add(offset);
-            activeCamera.position.lerp(cameraTarget, 0.1);
-            activeCamera.lookAt(boneco.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
+    if (teclas['w'] || teclas['W']) {
+        const newZ = boneco.position.z - 0.1;
+        if (newZ >= terrainLimits.minZ) {
+            boneco.position.z = newZ;
+            aAndar = true;
         }
+    }
+    if (teclas['s'] || teclas['S']) {
+        const newZ = boneco.position.z + 0.1;
+        if (newZ <= terrainLimits.maxZ) {
+            boneco.position.z = newZ;
+            aAndar = true;
+        }
+    }
+    if (teclas['a'] || teclas['A']) {
+        const newX = boneco.position.x - 0.1;
+        if (newX >= terrainLimits.minX) {
+            boneco.position.x = newX;
+            aAndar = true;
+        }
+    }
+    if (teclas['d'] || teclas['D']) {
+        const newX = boneco.position.x + 0.1;
+        if (newX <= terrainLimits.maxX) {
+            boneco.position.x = newX;
+            aAndar = true;
+        }
+    }
+
+    if (!emAcao && (estadoAtual === 'idle' || estadoAtual === 'walk')) {
+        if (aAndar) trocaAnimacao('walk');
+        else trocaAnimacao('idle');
+    }
+
+    const offset = new THREE.Vector3(-1, 2, 5);
+    const cameraTarget = boneco.position.clone().add(offset);
+    activeCamera.position.lerp(cameraTarget, 0.1);
+    activeCamera.lookAt(boneco.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
+}
 
         if (boneco) atualizarHitboxesJogador();
         if (inimigo) atualizarHitboxesInimigo();
@@ -612,7 +660,18 @@
 
         if (distancia > 2 && !emAcaoInimigo) {
             const direcao = new THREE.Vector3().subVectors(boneco.position, inimigo.position).normalize();
-            inimigo.position.add(direcao.multiplyScalar(0.05)); // reduzi um pouco a velocidade
+            const newPosition = inimigo.position.clone().add(direcao.multiplyScalar(0.05));
+
+            // Verificar se a nova posição está dentro dos limites
+            if (
+                newPosition.x >= terrainLimits.minX &&
+                newPosition.x <= terrainLimits.maxX &&
+                newPosition.z >= terrainLimits.minZ &&
+                newPosition.z <= terrainLimits.maxZ
+            ) {
+                inimigo.position.copy(newPosition);
+            }
+
             inimigo.lookAt(boneco.position);
 
             if (estadoInimigoAtual !== 'walk') trocaAnimacaoInimigo('walk');
@@ -676,4 +735,11 @@
     sunFolder.addColor({ color: sun.color.getHex() }, 'color')
         .name('Color')
         .onChange((val) => sun.color.set(val));
+
+    const terrainLimits = {
+    minX: -25, // Metade negativa da largura do terreno
+    maxX: 25,  // Metade positiva da largura do terreno
+    minZ: -25, // Metade negativa da altura do terreno
+    maxZ: 25   // Metade positiva da altura do terreno
+};
 
