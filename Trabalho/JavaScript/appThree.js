@@ -169,7 +169,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
     const loader = new GLTFLoader();
 
     loader.load(
-        './models/ninja.glb',
+        './models/ninja2.glb',
         function (gltf) {
             boneco = gltf.scene;
             boneco.scale.set(1, 1, 1);
@@ -378,8 +378,8 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         teclas[e.key] = true;
 
         if (e.key === '1') iniciarAcao('punch');
-        if (e.key === '2') iniciarAcao('elbow');
-        if (e.key === '3') iniciarAcao('hammer_kick');
+        if (e.key === '2') iniciarAcao('block');
+        if (e.key === '3') iniciarAcao('kick');
         if (e.key === '4') iniciarAcao('block_head');
         if (e.key === '5') iniciarAcao('hit');
         if (e.key === '6') iniciarAcao('dying');
@@ -469,7 +469,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         if (cooldownHit) return false;
 
         // Apenas cause dano se estiver numa animação de ataque
-        const animacoesDeAtaque = ['punch', 'elbow', 'hammer_kick'];
+        const animacoesDeAtaque = ['punch', 'kick'];
         if (!animacoesDeAtaque.includes(estadoAtual)) return false;
 
         // Se o inimigo estiver bloqueando, não recebe dano
@@ -588,38 +588,48 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
     let aAndar = false;
 
     if (teclas['w'] || teclas['W']) {
-        const newZ = boneco.position.z - 0.1;
+        const newZ = boneco.position.z - 0.05;
         if (newZ >= terrainLimits.minZ) {
             boneco.position.z = newZ;
             aAndar = true;
         }
     }
     if (teclas['s'] || teclas['S']) {
-        const newZ = boneco.position.z + 0.1;
+        const newZ = boneco.position.z + 0.05;
         if (newZ <= terrainLimits.maxZ) {
             boneco.position.z = newZ;
             aAndar = true;
         }
     }
     if (teclas['a'] || teclas['A']) {
-        const newX = boneco.position.x - 0.1;
+        const newX = boneco.position.x - 0.05;
         if (newX >= terrainLimits.minX) {
             boneco.position.x = newX;
             aAndar = true;
         }
     }
     if (teclas['d'] || teclas['D']) {
-        const newX = boneco.position.x + 0.1;
+        const newX = boneco.position.x + 0.05;
         if (newX <= terrainLimits.maxX) {
             boneco.position.x = newX;
             aAndar = true;
         }
     }
 
-    if (!emAcao && (estadoAtual === 'idle' || estadoAtual === 'walk')) {
-        if (aAndar) trocaAnimacao('walk');
-        else trocaAnimacao('idle');
+    if (!emAcao && (estadoAtual === 'idle' || estadoAtual.startsWith('walk'))) {
+    if (teclas['d'] || teclas['D']) {
+        trocaAnimacao('walk_back');
+    } else if (teclas['a'] || teclas['A']) {
+        trocaAnimacao('walk_forward');
+    } else if (teclas['s'] || teclas['S']) {
+        trocaAnimacao('walk_left');
+    } else if (teclas['w'] || teclas['W']) {
+        trocaAnimacao('walk_right');
+    } else {
+        trocaAnimacao('idle');
     }
+}
+
 
     const offset = new THREE.Vector3(-1, 2, 5);
     const cameraTarget = boneco.position.clone().add(offset);
