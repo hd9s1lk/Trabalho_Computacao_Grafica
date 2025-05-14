@@ -51,6 +51,11 @@ import * as THREE from 'three';
   controls.update();
 });
 
+//função para limitar movimento das camaras
+function clampCameraPosition(camera, limits) {
+  camera.position.x = Math.max(limits.minX + 5, Math.min(limits.maxX, camera.position.x));
+  camera.position.z = Math.max(limits.minZ + 5, Math.min(limits.maxZ, camera.position.z));
+}
 
 
     // Terreno
@@ -281,6 +286,8 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
     );
 
     const treeLoader = new GLTFLoader();
+    const collidableObjects = [];
+    let tree;
 
     // Função para gerar uma posição aleatória dentro dos limites do mapa
     function getRandomPosition() {
@@ -311,6 +318,10 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
 
             // Adiciona a árvore à cena
             scene.add(tree);
+
+
+            let box = new THREE.Box3().setFromObject(tree);
+            collidableObjects.push({mesh: tree,box});
         }
     });
 
@@ -565,8 +576,14 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         gameOver = true;
     }
 
-
-
+        function checkCollisions(playerBox) {
+            for (const obj of collidableObjects) {
+        if (playerBox.intersectsBox(obj.box)) {
+        return true; // Colidiu
+        }
+    }
+    return false;
+    }
 
     function animate() {
         const delta = clock.getDelta();
@@ -643,6 +660,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
             boneco.lookAt(inimigo.position);
         }
 
+        clampCameraPosition(activeCamera, terrainLimits);
 
         renderer.render(scene, activeCamera);
         stats.update();
