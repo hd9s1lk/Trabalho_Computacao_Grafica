@@ -368,7 +368,13 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         }
     });
 
-
+const loaderBirds = new GLTFLoader();
+loaderBirds.load('./models/bird.glb', (gltf) => {
+    gltf.scene.traverse(c => {
+        c.castShadow = true;
+    });
+    scene.add(birds);
+});
 
     // Clock
     const clock = new THREE.Clock();
