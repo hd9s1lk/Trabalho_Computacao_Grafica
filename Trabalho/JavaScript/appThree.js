@@ -26,7 +26,7 @@ import * as THREE from 'three';
     cameraSize * aspect,   // right
     cameraSize,            // top
     -cameraSize,           // bottom
-    0.01,                   // near
+    0.5,                   // near
     500                   // far
 );
     OrthographicCamera.position.set(0, 100, 0); // Câmera elevada, vista de cima
@@ -79,9 +79,6 @@ import * as THREE from 'three';
 
     scene.add(sun);
     scene.add(sun.target);
-
-    const sunHelper = new THREE.DirectionalLightHelper(sun, 5);
-    scene.add(sunHelper);
 
     const ambient = new THREE.AmbientLight(0x404060, 0.7);
     scene.add(ambient);
