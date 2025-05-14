@@ -64,9 +64,6 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // Luzes
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     const sun = new THREE.DirectionalLight(0xffffff, 1.5);
     sun.position.set(20, 40, 10);
@@ -95,6 +92,34 @@
     const rimLight = new THREE.DirectionalLight(0x99ccff, 0.8);
     rimLight.position.set(-10, 10, -10);
     scene.add(rimLight);
+
+    // Referências às luzes
+const directionalLights = [sun, rimLight];
+const hemisphereLight = fillLight;
+const ambientLight = ambient;
+
+// Estado atual das luzes
+let ambientOn = true;
+let directionalOn = true;
+let hemisphereOn = true;
+
+// Event Listeners para os botões
+document.getElementById('toggleAmbient').addEventListener('click', () => {
+    ambientOn = !ambientOn;
+    ambientLight.visible = ambientOn;
+});
+
+document.getElementById('toggleDirectional').addEventListener('click', () => {
+    directionalOn = !directionalOn;
+    directionalLights.forEach(light => light.visible = directionalOn);
+    sunHelper.visible = directionalOn; // Também esconde o helper
+});
+
+document.getElementById('toggleHemisphere').addEventListener('click', () => {
+    hemisphereOn = !hemisphereOn;
+    hemisphereLight.visible = hemisphereOn;
+});
+
 
     // Nevoeiro
     scene.fog = new THREE.Fog(0xcccccc, 10, 50);
