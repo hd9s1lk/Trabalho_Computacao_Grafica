@@ -767,9 +767,9 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         .onChange((val) => sun.color.set(val));
 
     const terrainLimits = {
-    minX: -25, // Metade negativa da largura do terreno
-    maxX: 25,  // Metade positiva da largura do terreno
-    minZ: -25, // Metade negativa da altura do terreno
-    maxZ: 25   // Metade positiva da altura do terreno
+    minX: -22, // Metade negativa da largura do terreno
+    maxX: 22,  // Metade positiva da largura do terreno
+    minZ: -22, // Metade negativa da altura do terreno
+    maxZ: 22   // Metade positiva da altura do terreno
 };
 
