@@ -31,7 +31,19 @@ export class Terrain extends THREE.Mesh {
             this.remove(this.terrain);
         }
 
-        const terrainMaterial = new THREE.MeshStandardMaterial({ color: 0x50a000 });
+        const textureLoader = new THREE.TextureLoader();
+        const grassTexture = textureLoader.load('models/grass.png'); // substitua pelo caminho real da imagem
+
+        grassTexture.wrapS = THREE.RepeatWrapping;
+        grassTexture.wrapT = THREE.RepeatWrapping;
+        grassTexture.repeat.set(this.width / 10, this.height / 10); // Ajuste o tiling conforme necessário
+
+        const terrainMaterial = new THREE.MeshStandardMaterial({
+            map: grassTexture,
+            side: THREE.DoubleSide,
+        });
+
+
         const terrainGeometry = new THREE.PlaneGeometry(this.width, this.height, this.width, this.height);
         this.terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
 

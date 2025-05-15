@@ -228,7 +228,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
 
     // Carregar inimigo
     loader.load(
-        './models/creed.glb',
+        './models/creed2.glb',
         function (gltf) {
             inimigo = gltf.scene;
             inimigo.scale.set(1, 1, 1);
@@ -699,7 +699,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
 
             inimigo.lookAt(boneco.position);
 
-            if (estadoInimigoAtual !== 'walk') trocaAnimacaoInimigo('walk');
+            if (estadoInimigoAtual !== 'walk_forward') trocaAnimacaoInimigo('walk_forward');
         } else if (tempoUltimaAcaoInimigo >= intervaloEntreAcoes && !emAcaoInimigo) {
             const acoes = ['punch', 'kick', 'block'];
             const acaoEscolhida = acoes[Math.floor(Math.random() * acoes.length)];
@@ -720,26 +720,31 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
     }
 
     function iniciarAcaoInimigo(nome) {
-        const acao = animationsInimigo[nome.toLowerCase()];
-        if (!acao || emAcaoInimigo) return;
+    const nomeAnimacao = nome.toLowerCase();
+    const novaAcao = animationsInimigo[nomeAnimacao];
 
-        emAcaoInimigo = true;
-        if (animationsInimigo[estadoInimigoAtual]) {
-            animationsInimigo[estadoInimigoAtual].fadeOut(0.4);
-        }
+    if (!novaAcao || emAcaoInimigo) return;
 
-        acao.reset().setLoop(THREE.LoopOnce, 1);
-        acao.clampWhenFinished = true;
-        acao.fadeIn(0.2).play();
-        estadoInimigoAtual = nome;
+    emAcaoInimigo = true;
 
-        mixerInimigo.addEventListener('finished', function fim() {
-            mixerInimigo.removeEventListener('finished', fim);
-            emAcaoInimigo = false;
-            trocaAnimacaoInimigo('idle');
-        });
+    const acaoAtual = animationsInimigo[estadoInimigoAtual];
+    if (acaoAtual && acaoAtual !== novaAcao) {
+        acaoAtual.fadeOut(0.5);
     }
 
+    novaAcao.reset().setLoop(THREE.LoopOnce, 1);
+    novaAcao.clampWhenFinished = true;
+    novaAcao.fadeIn(0.5).play();
+    estadoInimigoAtual = nomeAnimacao;
+
+    const aoTerminar = () => {
+        mixerInimigo.removeEventListener('finished', aoTerminar);
+        emAcaoInimigo = false;
+        trocaAnimacaoInimigo('idle');
+    };
+
+    mixerInimigo.addEventListener('finished', aoTerminar);
+}
 
 
     // GUI Terreno
