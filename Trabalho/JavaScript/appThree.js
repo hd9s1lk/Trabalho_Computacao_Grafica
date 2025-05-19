@@ -63,7 +63,14 @@ function clampCameraPosition(camera, limits) {
     scene.add(terrain);
     terrain.terrain.receiveShadow = true;
 
-    scene.background = new THREE.Color(0xadd8e6);
+    // Carregar o texture loader
+        const loadertexture = new THREE.TextureLoader();
+
+        // Carregar a imagem como textura
+        loadertexture.load('./models/ceu_noite.png', function(texture) {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            scene.background = texture;
+            });
 
     // Luzes
     renderer.shadowMap.enabled = true;
