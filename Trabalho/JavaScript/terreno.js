@@ -127,7 +127,7 @@ export class Terrain extends THREE.Mesh {
 
     // Carrega a textura
     const textureLoader = new THREE.TextureLoader();
-    const wallTexture = textureLoader.load('models/wall.jpg');
+    const wallTexture = textureLoader.load('models/wall_japan.png');
     wallTexture.wrapS = THREE.RepeatWrapping;
     wallTexture.wrapT = THREE.RepeatWrapping;
     wallTexture.repeat.set(5, 1); // Ajusta conforme necessário
