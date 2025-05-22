@@ -49,6 +49,7 @@ import * as THREE from 'three';
   // Atualiza controls (se usares OrbitControls)
   controls.object = activeCamera;
   controls.update();
+
 });
 
 //função para limitar movimento das camaras
@@ -67,7 +68,7 @@ function clampCameraPosition(camera, limits) {
         const loadertexture = new THREE.TextureLoader();
 
         // Carregar a imagem como textura
-        loadertexture.load('./models/ceu_noite.png', function(texture) {
+        loadertexture.load('./models/ceu-noite2.jpg', function(texture) {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             scene.background = texture;
             });
