@@ -20,6 +20,8 @@ export class Terrain extends THREE.Mesh {
         this.createTorii();
         this.createWalls();
         this.createBirds();
+        this.createLanterna();
+        this.createLanternasNasParedes();
 
         console.log(this.#objectMap);
     }
@@ -295,6 +297,158 @@ export class Terrain extends THREE.Mesh {
 
         }
     }
+
+createLanterna() {
+  const lanterna = new THREE.Group();
+
+  const scaleFactor = 0.7;
+
+ // === BASE (pequena e cinza) ===
+const baseHeight = 1 * scaleFactor;
+const baseGeometry = new THREE.BoxGeometry(0.4 * scaleFactor, baseHeight, 0.2 * scaleFactor);
+const baseMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+const baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
+baseMesh.position.set(0, baseHeight / 2, 0); // base apoiada no chão
+lanterna.add(baseMesh);
+
+// === SUPORTE CURVO (começa no topo da base) ===
+const curve = new THREE.QuadraticBezierCurve3(
+  new THREE.Vector3(0, baseHeight, 0),                 // início: topo da base
+  new THREE.Vector3(0, baseHeight + 0.5 * scaleFactor, 0.5), // curva
+  new THREE.Vector3(0, baseHeight + 1.2 * scaleFactor, 0)    // fim
+);
+const tubeGeometry = new THREE.TubeGeometry(curve, 20, 0.05 * scaleFactor, 8, false);
+const tubeMaterial = new THREE.MeshStandardMaterial({ color: 0x3c2f1b });
+const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
+lanterna.add(tubeMesh);
+
+
+  // === CORPO DA LANTERNA (centralizado no suporte) ===
+  const body = new THREE.Group();
+  const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
+
+  const bodyBox = new THREE.BoxGeometry(1 * scaleFactor, 1.2 * scaleFactor, 1 * scaleFactor);
+  const bodyMesh = new THREE.Mesh(bodyBox, frameMaterial);
+  bodyMesh.position.set(0, 2.8 * scaleFactor, 0);
+  body.add(bodyMesh);
+
+  const barGeo = new THREE.BoxGeometry(0.05 * scaleFactor, 1.2 * scaleFactor, 0.05 * scaleFactor);
+  for (let i = -0.4; i <= 0.4; i += 0.4) {
+    for (let j = -0.4; j <= 0.4; j += 0.8) {
+      const bar = new THREE.Mesh(barGeo, frameMaterial);
+      bar.position.set(i * scaleFactor, 2.8 * scaleFactor, j * scaleFactor);
+      body.add(bar);
+
+      const sideBar = new THREE.Mesh(barGeo, frameMaterial);
+      sideBar.rotation.y = Math.PI / 2;
+      sideBar.position.set(0, 2.8 * scaleFactor, (j + i) * scaleFactor);
+      body.add(sideBar);
+    }
+  }
+
+  const glassMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xffe5b4,
+    transparent: true,
+    opacity: 0.5,
+    transmission: 1.0,
+    emissive: new THREE.Color(0xffcc88),
+    emissiveIntensity: 0.3,
+    roughness: 0.2,
+    metalness: 0
+  });
+  const glassGeo = new THREE.PlaneGeometry(0.8 * scaleFactor, 1.0 * scaleFactor);
+  for (let angle = 0; angle < 4; angle++) {
+    const glass = new THREE.Mesh(glassGeo, glassMaterial);
+    glass.position.set(0, 2.8 * scaleFactor, 0.51 * scaleFactor);
+    glass.rotation.y = angle * Math.PI / 2;
+    body.add(glass.clone());
+  }
+
+  lanterna.add(body);
+
+  // === TOPO ===
+  const roof = new THREE.Group();
+  const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x3b2c1a });
+
+  for (let i = 0; i < 3; i++) {
+    const layer = new THREE.BoxGeometry(
+      (1.2 - i * 0.2) * scaleFactor,
+      0.1 * scaleFactor,
+      (1.2 - i * 0.2) * scaleFactor
+    );
+    const layerMesh = new THREE.Mesh(layer, roofMaterial);
+    layerMesh.position.set(0, (3.4 + i * 0.08) * scaleFactor, 0);
+    roof.add(layerMesh);
+  }
+
+  const tipGeo = new THREE.BoxGeometry(0.1 * scaleFactor, 0.05 * scaleFactor, 0.4 * scaleFactor);
+  for (let offset of [-0.55, 0.55]) {
+    const tip1 = new THREE.Mesh(tipGeo, roofMaterial);
+    tip1.position.set(offset * scaleFactor, 3.55 * scaleFactor, 0);
+    tip1.rotation.z = 0.2 * offset;
+    roof.add(tip1);
+
+    const tip2 = new THREE.Mesh(tipGeo, roofMaterial);
+    tip2.rotation.z = 0.2 * offset;
+    tip2.rotation.y = Math.PI / 2;
+    tip2.position.set(0, 3.55 * scaleFactor, offset * scaleFactor);
+    roof.add(tip2);
+  }
+
+  lanterna.add(roof);
+
+  // === LUZ ===
+  const pointLight = new THREE.PointLight(0xffcc66, 1, 5 * scaleFactor);
+  pointLight.position.set(0, 2.8 * scaleFactor, 0);
+  lanterna.add(pointLight);
+
+  return lanterna;
+}
+
+
+createLanternasNasParedes() {
+    const wallHeight = 5;
+    const lanternaY = wallHeight / 2; // meia altura
+    const offsetZ = this.height / 2 - 0.3;
+    const offsetX = this.width / 2 - 0.3;
+    const spacing = this.width / 4; // para distribuir 3 lanternas por parede
+
+    const lanternas = new THREE.Group();
+
+    // Frontal (-Z)
+    for (let i = -1; i <= 1; i++) {
+        const lanterna = this.createLanterna();
+        lanterna.position.set(i * spacing, lanternaY, -offsetZ);
+        lanternas.add(lanterna);
+    }
+
+    // Traseira (+Z)
+    for (let i = -1; i <= 1; i++) {
+        const lanterna = this.createLanterna();
+        lanterna.position.set(i * spacing, lanternaY, offsetZ);
+        lanternas.add(lanterna);
+    }
+
+    // Esquerda (-X)
+    for (let i = -1; i <= 1; i++) {
+        const lanterna = this.createLanterna();
+        lanterna.position.set(-offsetX, lanternaY, i * spacing);
+        lanternas.add(lanterna);
+        lanterna.rotation.y = Math.PI / 2; // gira para "olhar" para dentro
+    }
+
+    // Direita (+X)
+    for (let i = -1; i <= 1; i++) {
+        const lanterna = this.createLanterna();
+        lanterna.position.set(offsetX, lanternaY, i * spacing);
+        lanternas.add(lanterna);
+        lanterna.rotation.y = -Math.PI / 2;
+    }
+
+    this.add(lanternas);
+}
+
+
 
     createBirds() {
         const birdCount = 10; // Número de pássaros
