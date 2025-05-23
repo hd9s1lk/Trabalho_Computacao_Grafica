@@ -200,33 +200,99 @@ export class Terrain extends THREE.Mesh {
         for (let i = 0; i < this.toriiCount; i++) {
             const vermelho = new THREE.MeshStandardMaterial({ color: 0xff2c2c });
             const preto = new THREE.MeshStandardMaterial({ color: 0x222222 });
-
+            const amarelo = new THREE.MeshStandardMaterial({ color: 0xffff00 });
             const altura = 7;
-            const raio = 0.3;
-            const posteGeo = new THREE.CylinderGeometry(raio, raio, altura, 16);
+
+            const posteGeo = new THREE.BoxGeometry(0.6, 7, 0.6);
+            const coberturaposteGeo = new THREE.BoxGeometry(0.7, 1.5, 0.7);
+
+            const coberturaPosteEsq = new THREE.Mesh(coberturaposteGeo, preto);
+            coberturaPosteEsq.position.set(-3.26, 0.7, 0); // Ajustado para centralizar
+            coberturaPosteEsq.rotation.z = THREE.MathUtils.degToRad(-5); // Inclina 5 graus para fora
+            this.torii.add(coberturaPosteEsq);
 
             const posteEsq = new THREE.Mesh(posteGeo, vermelho);
             posteEsq.position.set(-3, altura / 2, 0); // Ajustado para centralizar
+            posteEsq.rotation.z = THREE.MathUtils.degToRad(-5); // Inclina 5 graus para fora
             this.torii.add(posteEsq);
+
+            const coberturaPosteDir = new THREE.Mesh(coberturaposteGeo, preto);
+            coberturaPosteDir.position.set(3.26, 0.7, 0); // Ajustado para centralizar
+            coberturaPosteDir.rotation.z = THREE.MathUtils.degToRad(5); // Inclina 5 graus para fora
+            this.torii.add(coberturaPosteDir);
 
             const posteDir = new THREE.Mesh(posteGeo, vermelho);
             posteDir.position.set(3, altura / 2, 0); // Ajustado para centralizar
+            posteDir.rotation.z = THREE.MathUtils.degToRad(5); // Inclina 5 graus para fora
             this.torii.add(posteDir);
 
-            const vigaGeo = new THREE.BoxGeometry(7.5, 0.6, 1);
+            const vigaGeo = new THREE.BoxGeometry(8, 0.6, 1);
             const viga = new THREE.Mesh(vigaGeo, vermelho);
             viga.position.set(0, altura - 0.3, 0); // Ajustado para centralizar
             this.torii.add(viga);
 
-            const topoGeo = new THREE.BoxGeometry(8, 0.4, 1.2);
+            const vigaGeomeio = new THREE.BoxGeometry(8, 0.4, 1);
+            const vigameio = new THREE.Mesh(vigaGeomeio, vermelho);
+            vigameio.position.set(0, altura - 1.4, 0); // Ajustado para centralizar
+            this.torii.add(vigameio);
+
+            const vigaGeoSuporte = new THREE.BoxGeometry(0.5, 0.85, 1);
+            const vigaSuporte = new THREE.Mesh(vigaGeoSuporte, vermelho);
+            vigaSuporte.position.set(0, altura - 0.78, 0); // Ajustado para centralizar
+            this.torii.add(vigaSuporte);
+
+
+            //const topoGeo = new THREE.BoxGeometry(8, 0.4, 1.2);
+           // const topo = new THREE.Mesh(topoGeo, preto);
+            //topo.position.set(0, altura + 0.3, 0); // Ajustado para centralizar
+            //this.torii.add(topo);
+
+            const largura = 10;
+            const alturaTopo = 0.5;
+            const profundidade = 1.2;
+            const segmentos = 100; // mais segmentos para curvatura suave
+
+            // Cria uma geometria subdividida no eixo X
+            const topoGeo = new THREE.BoxGeometry(largura, alturaTopo, profundidade, segmentos, 1, 1);
+
+            // Curvatura parabólica: define o "pico" da curva no centro
+            const intensidadeCurvatura = 0.2; // ajuste conforme preferir
+
+            const positionAttr = topoGeo.attributes.position;
+
+            for (let i = 0; i < positionAttr.count; i++) {
+            const x = positionAttr.getX(i);
+            const y = positionAttr.getY(i);
+
+            // Aplica uma parábola: y += -a(x^2) + h
+            // Centramos x em 0
+            const xNorm = (x / (largura / 2)); // varia de -1 a 1
+            const parabolaY = intensidadeCurvatura * (xNorm ** 2) + intensidadeCurvatura; // pico no centro
+
+            positionAttr.setY(i, y + parabolaY);
+            }
+
+            positionAttr.needsUpdate = true;
+            topoGeo.computeVertexNormals();
+
+            // Cria o mesh
             const topo = new THREE.Mesh(topoGeo, preto);
-            topo.position.set(0, altura + 0.3, 0); // Ajustado para centralizar
+            topo.position.set(0, altura - 0.3, 0);
+
             this.torii.add(topo);
+
+
 
             posteEsq.castShadow = true;
             posteDir.castShadow = true;
+            coberturaPosteDir.castShadow = true;
+            coberturaPosteEsq.castShadow = true;
             viga.castShadow = true;
-            topo.castShadow = true;
+            vigameio.castShadow = true;
+            vigaSuporte.castShadow = true;
+            topoGeo.castShadow = true;
+
+
         }
     }
 
