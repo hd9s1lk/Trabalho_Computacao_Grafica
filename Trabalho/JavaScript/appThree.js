@@ -212,7 +212,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
                             cuboDebug.name = 'hitbox_' + parte;
                             obj.updateWorldMatrix(true, false);
                             obj.getWorldPosition(cuboDebug.position);
-                            cuboDebug.visible = true;
+                            cuboDebug.visible = false;
 
                             scene.add(cuboDebug);
                             hitboxJogador[parte] = cuboDebug;
@@ -275,7 +275,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
                             const tamanho = getTamanhoHitbox(parte);
                             const hitbox = new THREE.Mesh(new THREE.BoxGeometry(...tamanho), materialHitbox);
                             hitbox.name = 'hitbox_inimigo_' + parte;
-                            hitbox.visible = true;
+                            hitbox.visible = false;
 
                             obj.updateWorldMatrix(true, false);
                             obj.getWorldPosition(hitbox.position);
@@ -691,7 +691,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         const distancia = boneco.position.distanceTo(inimigo.position);
         tempoUltimaAcaoInimigo += delta;
 
-        if (distancia > 2 && !emAcaoInimigo) {
+        if (distancia > 1.7 && !emAcaoInimigo) {
             const direcao = new THREE.Vector3().subVectors(boneco.position, inimigo.position).normalize();
             const newPosition = inimigo.position.clone().add(direcao.multiplyScalar(0.05));
 
@@ -718,14 +718,20 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
 
 
     function trocaAnimacaoInimigo(nome) {
-        if (!inimigo || !mixerInimigo) return;
-        if (estadoInimigoAtual !== nome && animationsInimigo[nome.toLowerCase()]) {
-            mixerInimigo.stopAllAction();
-            const acao = animationsInimigo[nome.toLowerCase()];
-            acao.reset().fadeIn(0.4).play();
-            estadoInimigoAtual = nome;
-        }
+    if (!inimigo || !mixerInimigo) return;
+    if (estadoInimigoAtual === nome || !animationsInimigo[nome.toLowerCase()]) return;
+
+    const novaAcao = animationsInimigo[nome.toLowerCase()];
+    const acaoAtual = animationsInimigo[estadoInimigoAtual];
+
+    if (acaoAtual && acaoAtual !== novaAcao) {
+        acaoAtual.fadeOut(0.3);
     }
+
+    novaAcao.reset().fadeIn(0.3).play();
+    estadoInimigoAtual = nome;
+}
+
 
     function iniciarAcaoInimigo(nome) {
     const nomeAnimacao = nome.toLowerCase();
