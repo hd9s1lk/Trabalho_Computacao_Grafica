@@ -347,6 +347,7 @@ lanterna.add(tubeMesh);
   }
 
   const glassMaterial = new THREE.MeshPhysicalMaterial({
+    name: 'LanternaGlass',
     color: 0xffe5b4,
     transparent: true,
     opacity: 0.5,
@@ -398,11 +399,18 @@ lanterna.add(tubeMesh);
   lanterna.add(roof);
 
   // === LUZ ===
-  const pointLight = new THREE.PointLight(0xffcc66, 1, 5 * scaleFactor);
-  pointLight.position.set(0, 2.8 * scaleFactor, 0);
-  lanterna.add(pointLight);
+  const light = new THREE.PointLight(0xffcc88, 3, 5);
+    light.position.set(0, 2.8 * scaleFactor, 0);
+    light.castShadow = false; 
+    light.shadow.mapSize.set(512, 512);
+    light.shadow.bias = -0.005;
+    lanterna.add(light);
+    if (!window.lanternLights) window.lanternLights = [];
+    window.lanternLights.push(light);
 
-  return lanterna;
+
+return lanterna;
+ 
 }
 
 

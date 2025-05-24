@@ -58,11 +58,13 @@ function clampCameraPosition(camera, limits) {
   camera.position.z = Math.max(limits.minZ + 5, Math.min(limits.maxZ, camera.position.z));
 }
 
-
+    window.lanternLights = [];
     // Terreno
     const terrain = new Terrain(50, 50);
     scene.add(terrain);
     terrain.terrain.receiveShadow = true;
+    let lanternsOn = true;
+
 
     // Carregar o texture loader
         const loadertexture = new THREE.TextureLoader();
@@ -81,7 +83,7 @@ function clampCameraPosition(camera, limits) {
     const sun = new THREE.DirectionalLight(0xffffff, 1.5);
     sun.position.set(20, 40, 10);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.mapSize.set(4096, 4096);
     sun.shadow.camera.near = 1;
     sun.shadow.camera.far = 100;
     sun.shadow.camera.left = -20;
@@ -128,6 +130,20 @@ document.getElementById('toggleDirectional').addEventListener('click', () => {
 document.getElementById('toggleHemisphere').addEventListener('click', () => {
     hemisphereOn = !hemisphereOn;
     hemisphereLight.visible = hemisphereOn;
+});
+
+document.getElementById('toggleLanterns').addEventListener('click', () => {
+    lanternsOn = !lanternsOn;
+    lanternLights.forEach(light => light.visible = lanternsOn);
+
+    // Escurece o vidro
+    scene.traverse(obj => {
+        if (obj.isMesh && obj.material && obj.material.emissive) {
+            if (obj.material.name === 'LanternaGlass') {
+                obj.material.emissiveIntensity = lanternsOn ? 0.3 : 0;
+            }
+        }
+    });
 });
 
 
