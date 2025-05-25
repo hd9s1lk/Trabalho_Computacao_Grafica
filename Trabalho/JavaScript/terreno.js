@@ -12,6 +12,7 @@ export class Terrain extends THREE.Mesh {
         this.rockCount = 45;
         this.bushCount = 40;
         this.toriiCount = 1;
+        this.candeeiroCount = 10; // Novo: número de candeeiros
 
         this.createTerrain();
         //this.createTrees();
@@ -19,9 +20,10 @@ export class Terrain extends THREE.Mesh {
         //this.createBushes();
         this.createTorii();
         this.createWalls();
-        this.createBirds();
+        //this.createBirds();
         this.createLanterna();
         this.createLanternasNasParedes();
+        this.createCandeeirosNoTerreno(); // Novo: espalha candeeiros
 
         console.log(this.#objectMap);
     }
@@ -200,7 +202,7 @@ export class Terrain extends THREE.Mesh {
         this.add(this.torii);
 
         for (let i = 0; i < this.toriiCount; i++) {
-            const vermelho = new THREE.MeshStandardMaterial({ color: 0xff2c2c });
+            const vermelho = new THREE.MeshStandardMaterial({ color: 0xff0000 });
             const preto = new THREE.MeshStandardMaterial({ color: 0x222222 });
             const amarelo = new THREE.MeshStandardMaterial({ color: 0xffff00 });
             const altura = 7;
@@ -508,4 +510,189 @@ createLanternasNasParedes() {
     
         animateBirds();
     }
+
+
+
+
+
+
+
+
+    createCandeeiro() {
+        // Cria um grupo para o candeeiro
+        const candeeiro = new THREE.Group();
+
+        // Material vermelho
+        const vermelho = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const preto = new THREE.MeshStandardMaterial({ color: 0x000000 });
+
+        // Geometria do cilindro (raio topo, raio base, altura, segmentos)
+        const base = new THREE.CylinderGeometry(0.05, 0.05, 1.395, 64);
+        // Mesh do cilindro
+        const cilindro = new THREE.Mesh(base, vermelho);
+        cilindro.position.set(0, 0.725, 0); // Corrigido para posição local
+
+        // Caixa Principal
+        const facecaixa1 = new THREE.BoxGeometry( 0.01, 0.25, 0.25 );
+        const face1 = new THREE.Mesh(facecaixa1, vermelho); 
+        face1.position.set(0.125, 1.55, 0);
+
+        const facecaixa2 = new THREE.BoxGeometry( 0.25, 0.01, 0.25 );
+        const face2 = new THREE.Mesh(facecaixa2, vermelho); 
+        face2.position.set(0, 1.425, 0);
+
+        const facecaixa3 = new THREE.BoxGeometry( 0.25, 0.01, 0.25 );
+        const face3 = new THREE.Mesh(facecaixa3, vermelho); 
+        face3.position.set(0, 1.675, 0);
+
+        const facecaixa4 = new THREE.BoxGeometry( 0.01, 0.25, 0.25);
+        const face4 = new THREE.Mesh(facecaixa4, vermelho); 
+        face4.position.set(-0.125, 1.55, 0);
+
+        // Bordas da Frente
+        const gradeHborda1 = new THREE.BoxGeometry( 0.04, 0.25, 0.01); 
+        const hborda1 = new THREE.Mesh(gradeHborda1, vermelho ); 
+        hborda1.position.set(-0.106, 1.55, 0.125);
+
+        const gradeHborda2 = new THREE.BoxGeometry( 0.04, 0.25, 0.01); 
+        const hborda2 = new THREE.Mesh(gradeHborda2, vermelho ); 
+        hborda2.position.set(0.106, 1.55, 0.125);
+
+        const gradeVborda1 = new THREE.BoxGeometry( 0.25, 0.04, 0.01); 
+        const vborda1 = new THREE.Mesh(gradeVborda1, vermelho ); 
+        vborda1.position.set(0, 1.656, 0.125);
+
+        const gradeVborda2 = new THREE.BoxGeometry( 0.25, 0.04, 0.01); 
+        const vborda2 = new THREE.Mesh(gradeVborda2, vermelho ); 
+        vborda2.position.set(0, 1.444, 0.125);
+
+        const gradeHjanelaF= new THREE.BoxGeometry( 0.25, 0.04, 0.01);
+        const ghjanelaF = new THREE.Mesh(gradeHjanelaF, vermelho );
+        ghjanelaF.position.set(0, 1.55, 0.125);
+
+        const gradeVjanelaF= new THREE.BoxGeometry( 0.04, 0.25, 0.01);
+        const gvjanelaF = new THREE.Mesh(gradeVjanelaF, vermelho );
+        gvjanelaF.position.set(0, 1.55, 0.125);
+
+        // Bordas de Tras
+        const gradeHborda3 = new THREE.BoxGeometry( 0.04, 0.25, -0.01);
+        const hborda3 = new THREE.Mesh(gradeHborda3, vermelho );
+        hborda3.position.set(-0.106, 1.55, -0.125);
+
+        const gradeHborda4 = new THREE.BoxGeometry( 0.04, 0.25, -0.01);
+        const hborda4 = new THREE.Mesh(gradeHborda4, vermelho );
+        hborda4.position.set(0.106, 1.55, -0.125);
+
+        const gradeVborda3 = new THREE.BoxGeometry( 0.25, 0.04, -0.01);
+        const vborda3 = new THREE.Mesh(gradeVborda3, vermelho );
+        vborda3.position.set(0, 1.656, -0.125);
+
+        const gradeVborda4 = new THREE.BoxGeometry( 0.25, 0.04, -0.01);
+        const vborda4 = new THREE.Mesh(gradeVborda4, vermelho );
+        vborda4.position.set(0, 1.444, -0.125);
+
+        const gradeHjanelaT= new THREE.BoxGeometry( 0.25, 0.04, -0.01);
+        const ghjanelaT = new THREE.Mesh(gradeHjanelaT, vermelho );
+        ghjanelaT.position.set(0, 1.55, -0.125);
+
+        const gradeVjanelaT= new THREE.BoxGeometry( 0.04, 0.25, -0.01);
+        const gvjanelaT = new THREE.Mesh(gradeVjanelaT, vermelho );
+        gvjanelaT.position.set(0, 1.55, -0.125);
+
+        // Segundo Patamar para por o telhado
+        const facecaixa5 = new THREE.BoxGeometry( 0.01, 0.125, 0.25 );
+        const face5 = new THREE.Mesh(facecaixa5, vermelho); 
+        face5.position.set(0.125, 1.675, 0);
+
+        const facecaixa6 = new THREE.BoxGeometry( 0.01, 0.125, 0.25 );
+        const face6 = new THREE.Mesh(facecaixa6, vermelho); 
+        face6.position.set(-0.125, 1.675, 0);
+
+        const facecaixa7 = new THREE.BoxGeometry( 0.25, 0.1, 0.01 );
+        const face7 = new THREE.Mesh(facecaixa7, vermelho); 
+        face7.position.set(0, 1.68, -0.125);
+
+        const facecaixa8 = new THREE.BoxGeometry( 0.25, 0.1, 0.01 );
+        const face8 = new THREE.Mesh(facecaixa8, vermelho); 
+        face8.position.set(0, 1.68, 0.125);
+
+        const facecaixa9 = new THREE.BoxGeometry( 0.25, 0.01, 0.25 );
+        const face9 = new THREE.Mesh(facecaixa9, vermelho); 
+        face9.position.set(0, 1.735, 0);
+
+        // Telhado
+        const telhadoD = new THREE.BoxGeometry(0.07, 0.25, 0.35);
+        const telhadoDMesh = new THREE.Mesh(telhadoD, preto);
+        telhadoDMesh.position.set(0.1, 1.72, 0);
+        telhadoDMesh.rotation.z = Math.PI / 4;
+
+        const telhadoE = new THREE.BoxGeometry(0.07, 0.25, 0.35);
+        const telhadoEMesh = new THREE.Mesh(telhadoE, preto);
+        telhadoEMesh.position.set(-0.1, 1.72, 0);
+        telhadoEMesh.rotation.z = Math.PI / -4;
+
+        const vigatelhado = new THREE.BoxGeometry(0.07, 0.07, 0.35);
+        const vigatelhadoMesh = new THREE.Mesh(vigatelhado, preto);
+        vigatelhadoMesh.position.set(0, 1.84, 0);
+        vigatelhadoMesh.rotation.z = Math.PI / -4;
+
+        // Bodaco que falta na face debaixo do telhado
+        const bocadoparede = new THREE.BoxGeometry(0.08, 0.08, 0.251);
+        const bocadoparedeMesh = new THREE.Mesh(bocadoparede, vermelho);
+        bocadoparedeMesh.position.set(0, 1.72, 0);
+        bocadoparedeMesh.rotation.z = Math.PI / -4;
+
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            name: 'CandeeiroGlass',
+            color: 0xffe5b4,
+            transparent: true,
+            opacity: 0.5,
+            transmission: 1.0,
+            emissive: new THREE.Color(0xffcc88),
+            emissiveIntensity: 0.3,
+            roughness: 0.2,
+            metalness: 0
+        });
+
+        const glassGeo = new THREE.PlaneGeometry(0.18, 0.22);
+        const glass1 = new THREE.Mesh(glassGeo, glassMaterial);
+        glass1.position.set(0, 1.55, 0.124);
+        const glass2 = new THREE.Mesh(glassGeo, glassMaterial);
+        glass2.position.set(0, 1.55, -0.124);
+
+        // Adiciona tudo ao grupo
+        candeeiro.add(cilindro, face1, face2, face3, face4, hborda1, hborda2, vborda1, vborda2, hborda3, hborda4, vborda3, vborda4, ghjanelaF, gvjanelaF, ghjanelaT, gvjanelaT, face5, face6, face7, face8, face9, telhadoDMesh, telhadoEMesh, vigatelhadoMesh, bocadoparedeMesh, glass1, glass2);
+
+        // Sombra
+        [cilindro, face1, face2, face3, face4, hborda1, hborda2, vborda1, vborda2, hborda3, hborda4, vborda3, vborda4, ghjanelaF, gvjanelaF, ghjanelaT, gvjanelaT, face5, face6, face7, face8, telhadoDMesh, telhadoEMesh, vigatelhadoMesh, bocadoparedeMesh, glass1, glass2].forEach(obj => obj.castShadow = true);
+
+        // Adiciona luz dentro do candeeiro
+        const light = new THREE.PointLight(0xffcc88, 2, 2.75, 3);
+        light.position.set(0, 1.55, 0);
+        light.castShadow = false;
+        candeeiro.add(light);
+        if (!window.candeeiroLights) window.candeeiroLights = [];
+        window.candeeiroLights.push(light);
+
+        // Opcional: vidro mais "brilhante" e sem reação à luz
+        glass1.material = new THREE.MeshBasicMaterial({ color: 0xffe5b4, transparent: true, opacity: 0.1 });
+        glass2.material = new THREE.MeshBasicMaterial({ color: 0xffe5b4, transparent: true, opacity: 0.1 });
+
+        return candeeiro;
+    }
+
+    // Espalha vários candeeiros pelo terreno
+    createCandeeirosNoTerreno() {
+        this.candeeiros = new THREE.Group();
+        this.add(this.candeeiros);
+        for (let i = 0; i < this.candeeiroCount; i++) {
+            const candeeiro = this.createCandeeiro();
+            // Posição aleatória, evitando bordas
+            const x = Math.random() * (this.width - 6) - (this.width / 2 - 3);
+            const z = Math.random() * (this.height - 6) - (this.height / 2 - 3);
+            candeeiro.position.set(x, 0, z);
+            this.candeeiros.add(candeeiro);
+        }
+    }
+
 }

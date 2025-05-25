@@ -136,12 +136,29 @@ document.getElementById('toggleLanterns').addEventListener('click', () => {
     lanternsOn = !lanternsOn;
     lanternLights.forEach(light => light.visible = lanternsOn);
 
-    // Escurece o vidro
+    // Escurece o vidro das lanternas de parede
     scene.traverse(obj => {
-        if (obj.isMesh && obj.material && obj.material.emissive) {
-            if (obj.material.name === 'LanternaGlass') {
-                obj.material.emissiveIntensity = lanternsOn ? 0.3 : 0;
-            }
+        if (obj.isMesh && obj.material && obj.material.name === 'LanternaGlass') {
+            obj.material.emissiveIntensity = lanternsOn ? 0.3 : 0;
+            obj.material.opacity = lanternsOn ? 0.7 : 0.25;
+            obj.material.transparent = true;
+            obj.material.needsUpdate = true;
+        }
+    });
+});
+
+document.getElementById('toggleCandeeiros').addEventListener('click', () => {
+    if (!window.candeeiroLights) return;
+    window.candeeirosOn = !window.candeeirosOn;
+    window.candeeiroLights.forEach(light => light.visible = window.candeeirosOn);
+
+    // Escurece o vidro dos candeeiros do terreno
+    scene.traverse(obj => {
+        if (obj.isMesh && obj.material && obj.material.name === 'CandeeiroGlass') {
+            obj.material.emissiveIntensity = window.candeeirosOn ? 0.3 : 0;
+            obj.material.opacity = window.candeeirosOn ? 0.7 : 0.25;
+            obj.material.transparent = true;
+            obj.material.needsUpdate = true;
         }
     });
 });
