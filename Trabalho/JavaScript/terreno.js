@@ -24,6 +24,8 @@ export class Terrain extends THREE.Mesh {
         this.createLanterna();
         this.createLanternasNasParedes();
         this.createCandeeirosNoTerreno(); // Novo: espalha candeeiros
+        this.candeeiros = new THREE.Group();
+        this.add(this.candeeiros);
 
         console.log(this.#objectMap);
     }
@@ -667,16 +669,22 @@ createLanternasNasParedes() {
         [cilindro, face1, face2, face3, face4, hborda1, hborda2, vborda1, vborda2, hborda3, hborda4, vborda3, vborda4, ghjanelaF, gvjanelaF, ghjanelaT, gvjanelaT, face5, face6, face7, face8, telhadoDMesh, telhadoEMesh, vigatelhadoMesh, bocadoparedeMesh, glass1, glass2].forEach(obj => obj.castShadow = true);
 
         // Adiciona luz dentro do candeeiro
-        const light = new THREE.PointLight(0xffcc88, 2, 2.75, 3);
-        light.position.set(0, 1.55, 0);
-        light.castShadow = false;
-        candeeiro.add(light);
-        if (!window.candeeiroLights) window.candeeiroLights = [];
-        window.candeeiroLights.push(light);
+        const light = new THREE.PointLight(0xffcc88, 5, 15, 3);
+    light.position.set(0, 1.55, 0);
+    light.castShadow = true; // sombra desligada por defeito
+    light.shadow.mapSize.set(512, 512); // reduzido para otimizar
+    light.shadow.bias = -0.005; // evita artefactos
+
+    candeeiro.add(light);
+
+                // Guardar referência à luz no próprio objeto do candeeiro
+                candeeiro.light = light;
 
         // Opcional: vidro mais "brilhante" e sem reação à luz
         glass1.material = new THREE.MeshBasicMaterial({ color: 0xffe5b4, transparent: true, opacity: 0.1 });
         glass2.material = new THREE.MeshBasicMaterial({ color: 0xffe5b4, transparent: true, opacity: 0.1 });
+        console.log("✅ Candeeiro criado com luz:", light);
+
 
         return candeeiro;
     }
@@ -694,5 +702,48 @@ createLanternasNasParedes() {
             this.candeeiros.add(candeeiro);
         }
     }
+    ativarSombrasCandeeirosProximos(posJogador, posInimigo = null) {
+    console.log("🧯 Candeeiros encontrados para verificar:", this.candeeiros.children.length);
+
+    const raio = 8;
+    const personagens = [posJogador];
+    if (posInimigo) personagens.push(posInimigo);
+
+    this.candeeiros.children.forEach((candeeiro, i) => {
+        if (!candeeiro.light) {
+            console.warn(`⚠️ Candeeiro ${i} não tem light`);
+            return;
+        }
+
+        const candeeiroPos = new THREE.Vector3();
+        candeeiro.getWorldPosition(candeeiroPos);
+
+        const perto = personagens.some(p => {
+            const dist = p.distanceTo(candeeiroPos);
+            console.log(`📏 Distância do personagem à luz ${i}: ${dist.toFixed(2)}`);
+            return dist < raio;
+        });
+
+        const estadoAnterior = candeeiro.light.castShadow;
+
+        if (perto !== estadoAnterior) {
+            candeeiro.light.castShadow = perto;
+            candeeiro.light.needsUpdate = true;
+
+            console.log(`💡 Candeeiro ${i} -> castShadow: ${perto}`);
+        } else {
+            console.log(`🟡 Candeeiro ${i} -> já está com castShadow=${estadoAnterior}`);
+        }
+
+        const ativos = this.candeeiros.children.filter(c => c.light?.castShadow).length;
+        console.log(`🔦 Total de candeeiros com sombras ativas: ${ativos}`);
+
+    });
+}
+
+
+
+
+    
 
 }

@@ -77,10 +77,12 @@ function clampCameraPosition(camera, limits) {
 
     // Luzes
     renderer.shadowMap.enabled = true;
+    console.log("🌑 Sombras ativadas no renderer:", renderer.shadowMap.enabled);
+
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
-    const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+    const sun = new THREE.DirectionalLight(0xffffff, 0.8);
     sun.position.set(20, 40, 10);
     sun.castShadow = true;
     sun.shadow.mapSize.set(4096, 4096);
@@ -95,7 +97,7 @@ function clampCameraPosition(camera, limits) {
     scene.add(sun);
     scene.add(sun.target);
 
-    const ambient = new THREE.AmbientLight(0x404060, 0.7);
+    const ambient = new THREE.AmbientLight(0x404060, 0.3);
     scene.add(ambient);
 
     const fillLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 0.5);
@@ -626,7 +628,7 @@ document.getElementById('toggleCandeeiros').addEventListener('click', () => {
     return false;
     }
 
-    function animate() {
+    function animate(){
         const delta = clock.getDelta();
 
         if (!window.jogoIniciado) {
@@ -712,6 +714,15 @@ document.getElementById('toggleCandeeiros').addEventListener('click', () => {
         renderer.render(scene, activeCamera);
         return;
     }
+
+    if (window.terrain && window.terrain.ativarSombrasCandeeirosProximos) {
+    const posJogador = boneco?.position ?? new THREE.Vector3();
+    const posInimigo = inimigo?.position ?? null;
+
+    console.log("⏱️ Verificação de sombras chamada");
+    window.terrain.ativarSombrasCandeeirosProximos(posJogador, posInimigo);
+    }
+
 
     }
 
