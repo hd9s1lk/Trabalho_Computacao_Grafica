@@ -58,11 +58,13 @@ function clampCameraPosition(camera, limits) {
   camera.position.z = Math.max(limits.minZ + 5, Math.min(limits.maxZ, camera.position.z));
 }
 
-
+    window.lanternLights = [];
     // Terreno
     const terrain = new Terrain(50, 50);
     scene.add(terrain);
     terrain.terrain.receiveShadow = true;
+    let lanternsOn = true;
+
 
     // Carregar o texture loader
         const loadertexture = new THREE.TextureLoader();
@@ -75,13 +77,15 @@ function clampCameraPosition(camera, limits) {
 
     // Luzes
     renderer.shadowMap.enabled = true;
+    console.log("🌑 Sombras ativadas no renderer:", renderer.shadowMap.enabled);
+
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
-    const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+    const sun = new THREE.DirectionalLight(0xffffff, 0.8);
     sun.position.set(20, 40, 10);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.mapSize.set(4096, 4096);
     sun.shadow.camera.near = 1;
     sun.shadow.camera.far = 100;
     sun.shadow.camera.left = -20;
@@ -93,7 +97,7 @@ function clampCameraPosition(camera, limits) {
     scene.add(sun);
     scene.add(sun.target);
 
-    const ambient = new THREE.AmbientLight(0x404060, 0.7);
+    const ambient = new THREE.AmbientLight(0x404060, 0.3);
     scene.add(ambient);
 
     const fillLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 0.5);
@@ -128,6 +132,37 @@ document.getElementById('toggleDirectional').addEventListener('click', () => {
 document.getElementById('toggleHemisphere').addEventListener('click', () => {
     hemisphereOn = !hemisphereOn;
     hemisphereLight.visible = hemisphereOn;
+});
+
+document.getElementById('toggleLanterns').addEventListener('click', () => {
+    lanternsOn = !lanternsOn;
+    lanternLights.forEach(light => light.visible = lanternsOn);
+
+    // Escurece o vidro das lanternas de parede
+    scene.traverse(obj => {
+        if (obj.isMesh && obj.material && obj.material.name === 'LanternaGlass') {
+            obj.material.emissiveIntensity = lanternsOn ? 0.3 : 0;
+            obj.material.opacity = lanternsOn ? 0.7 : 0.25;
+            obj.material.transparent = true;
+            obj.material.needsUpdate = true;
+        }
+    });
+});
+
+document.getElementById('toggleCandeeiros').addEventListener('click', () => {
+    if (!window.candeeiroLights) return;
+    window.candeeirosOn = !window.candeeirosOn;
+    window.candeeiroLights.forEach(light => light.visible = window.candeeirosOn);
+
+    // Escurece o vidro dos candeeiros do terreno
+    scene.traverse(obj => {
+        if (obj.isMesh && obj.material && obj.material.name === 'CandeeiroGlass') {
+            obj.material.emissiveIntensity = window.candeeirosOn ? 0.3 : 0;
+            obj.material.opacity = window.candeeirosOn ? 0.7 : 0.25;
+            obj.material.transparent = true;
+            obj.material.needsUpdate = true;
+        }
+    });
 });
 
 
@@ -593,7 +628,7 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
     return false;
     }
 
-    function animate() {
+    function animate(){
         const delta = clock.getDelta();
 
         if (!window.jogoIniciado) {
@@ -679,6 +714,15 @@ document.getElementById('toggleHemisphere').addEventListener('click', () => {
         renderer.render(scene, activeCamera);
         return;
     }
+
+    if (window.terrain && window.terrain.ativarSombrasCandeeirosProximos) {
+    const posJogador = boneco?.position ?? new THREE.Vector3();
+    const posInimigo = inimigo?.position ?? null;
+
+    console.log("⏱️ Verificação de sombras chamada");
+    window.terrain.ativarSombrasCandeeirosProximos(posJogador, posInimigo);
+    }
+
 
     }
 
