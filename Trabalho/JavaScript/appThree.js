@@ -715,14 +715,6 @@ document.getElementById('toggleCandeeiros').addEventListener('click', () => {
         return;
     }
 
-    if (window.terrain && window.terrain.ativarSombrasCandeeirosProximos) {
-    const posJogador = boneco?.position ?? new THREE.Vector3();
-    const posInimigo = inimigo?.position ?? null;
-
-    console.log("⏱️ Verificação de sombras chamada");
-    window.terrain.ativarSombrasCandeeirosProximos(posJogador, posInimigo);
-    }
-
 
     }
 
