@@ -20,10 +20,10 @@ export class Terrain extends THREE.Mesh {
         //this.createBushes();
         this.createTorii();
         this.createWalls();
-        //this.createBirds();
-        this.createLanterna();
-        this.createLanternasNasParedes();
-        this.createCandeeirosNoTerreno(); // Novo: espalha candeeiros
+        this.createBird();
+        //this.createLanterna();
+        //this.createLanternasNasParedes();
+        //this.createCandeeirosNoTerreno(); // Novo: espalha candeeiros
         this.candeeiros = new THREE.Group();
         this.add(this.candeeiros);
 
@@ -462,56 +462,53 @@ createLanternasNasParedes() {
 
 
 
-    createBirds() {
-        const birdCount = 10; // Número de pássaros
-        const birdSpeed = 0.02; // Velocidade de voo
-    
-        this.birds = new THREE.Group();
-        this.add(this.birds);
-    
-        const birdGeometry = new THREE.ConeGeometry(0.2, 0.5, 8); // Forma simples para o pássaro
-        const birdMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-    
-        for (let i = 0; i < birdCount; i++) {
-            const bird = new THREE.Mesh(birdGeometry, birdMaterial);
-    
-            // Posição inicial aleatória
-            bird.position.set(
-                Math.random() * this.width - this.width / 2,
-                Math.random() * 10 + 5, // Altura entre 5 e 15
-                Math.random() * this.height - this.height / 2
-            );
-    
-            bird.rotation.z = Math.PI / 2; // Rotaciona para parecer um pássaro em voo
-            this.birds.add(bird);
-    
-            // Adiciona uma propriedade para armazenar a direção de movimento
-            bird.userData.direction = new THREE.Vector3(
-                Math.random() * 2 - 1, // Direção X
-                0,
-                Math.random() * 2 - 1 // Direção Z
-            ).normalize();
-        }
-    
-        // Animação dos pássaros
-        const animateBirds = () => {
-            this.birds.children.forEach((bird) => {
-                bird.position.add(bird.userData.direction.clone().multiplyScalar(birdSpeed));
-    
-                // Faz os pássaros "voltarem" ao cenário se saírem dos limites
-                if (bird.position.x > this.width / 2 || bird.position.x < -this.width / 2) {
-                    bird.userData.direction.x *= -1;
-                }
-                if (bird.position.z > this.height / 2 || bird.position.z < -this.height / 2) {
-                    bird.userData.direction.z *= -1;
-                }
-            });
-    
-            requestAnimationFrame(animateBirds);
-        };
-    
-        animateBirds();
-    }
+    createBird() {
+    // Cria um grupo para o pássaro
+    const birdGroup = new THREE.Group();
+
+    const birdhead = new THREE.SphereGeometry(0.08, 45, 45);
+    const almostblack = new THREE.MeshBasicMaterial({ color: 0x242424 });
+    const sphere = new THREE.Mesh(birdhead, almostblack);
+    sphere.position.set(0, 0, 0);
+    birdGroup.add(sphere);
+
+    const nozzle = new THREE.ConeGeometry(0.05, 0.10, 45);
+    const amarelo = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const cone = new THREE.Mesh(nozzle, amarelo);
+    cone.position.set(0, 0.1, 0);
+    birdGroup.add(cone);
+
+    const birdbody = new THREE.SphereGeometry(0.5, 32, 16);
+    birdbody.rotateZ(Math.PI / 2);
+    birdbody.scale(0.25, 0.35, 0.25);
+    const ellipsoidMesh = new THREE.Mesh(birdbody, almostblack);
+    ellipsoidMesh.position.set(0, -0.2, 0);
+    birdGroup.add(ellipsoidMesh);
+
+    const birdwingD = new THREE.BoxGeometry(0.155, 0.1, 0.05);
+    const birdwingDMesh = new THREE.Mesh(birdwingD, almostblack);
+    birdwingDMesh.position.set(0.2, -0.17, 0);
+    birdGroup.add(birdwingDMesh);
+
+    const birdwingE = new THREE.BoxGeometry(0.155, 0.1, 0.05);
+    const birdwingEMesh = new THREE.Mesh(birdwingE, almostblack);
+    birdwingEMesh.position.set(-0.2, -0.17, 0);
+    birdGroup.add(birdwingEMesh);
+
+    const birdtail = new THREE.CylinderGeometry(0.018, 0.09, 0.29, 45, 12, 0, 3.1415941);
+    const birdtailMesh = new THREE.Mesh(birdtail, almostblack);
+    birdtailMesh.position.set(0, -0.38, 0.0001);
+    birdGroup.add(birdtailMesh);
+
+    // Rotaciona o grupo inteiro para a horizontal (por exemplo, de pé para deitado)
+    // Rotação de 90 graus em Z deixa o bico para cima, em X deixa o bico para a frente
+    birdGroup.rotation.x = Math.PI / -2;
+
+    // Move o grupo para a posição desejada no mundo
+    birdGroup.position.set(15, 5.8, 0);
+
+    this.add(birdGroup);
+}
 
 
 
