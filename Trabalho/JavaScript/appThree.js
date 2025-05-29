@@ -85,7 +85,7 @@ function clampCameraPosition(camera, limits) {
     const sun = new THREE.DirectionalLight(0xffffff, 0.8);
     sun.position.set(20, 40, 10);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(4096, 4096);
+    sun.shadow.mapSize.set(1024, 1024);
     sun.shadow.camera.near = 1;
     sun.shadow.camera.far = 100;
     sun.shadow.camera.left = -20;
