@@ -705,6 +705,9 @@ document.getElementById('toggleCandeeiros').addEventListener('click', () => {
 
         clampCameraPosition(activeCamera, terrainLimits);
 
+        // Animação das asas e voo dos pássaros (todos)
+        terrain.animateAllBirds(delta, terrainLimits, clock.getElapsedTime());
+
         renderer.render(scene, activeCamera);
         stats.update();
         document.getElementById('vidaInimigo').innerText = `Vida Inimigo: ${vidaInimigo}`;
@@ -822,4 +825,6 @@ document.getElementById('toggleCandeeiros').addEventListener('click', () => {
     minZ: -22, // Metade negativa da altura do terreno
     maxZ: 22   // Metade positiva da altura do terreno
 };
+
+terrain.animateBirdWings(clock.getElapsedTime());
 
