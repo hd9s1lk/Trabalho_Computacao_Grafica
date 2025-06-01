@@ -20,12 +20,29 @@ export class Terrain extends THREE.Mesh {
         //this.createBushes();
         this.createTorii();
         this.createWalls();
-        //this.createBirds();
+        //this.createBird(); cria o modelo inicial do passaro, mas não se mexe logo nao sera apresentado 
         this.createLanterna();
         this.createLanternasNasParedes();
         this.createCandeeirosNoTerreno(); // Novo: espalha candeeiros
         this.candeeiros = new THREE.Group();
         this.add(this.candeeiros);
+
+        // === PÁSSAROS ===
+        this.birds = [];
+        const birdCount = 11;
+        for (let i = 0; i < birdCount; i++) {
+            // Posição aleatória no plano (y fixo)
+            const x = Math.random() * (this.width - 4) - (this.width / 2 - 2);
+            const z = Math.random() * (this.height - 4) - (this.height / 2 - 2);
+            const bird = this._createSingleBird();
+            bird.position.set(x, 5.8, z);
+            // Direção aleatória
+            bird.userData.direction = new THREE.Vector2(Math.random() - 0.5, Math.random() - 0.5).normalize();
+            bird.userData.speed = 2.5 + Math.random();
+            bird.userData.turnCooldown = 0;
+            this.add(bird);
+            this.birds.push(bird);
+        }
 
         console.log(this.#objectMap);
     }
@@ -406,8 +423,6 @@ lanterna.add(tubeMesh);
   const light = new THREE.PointLight(0xffcc88, 3, 5);
     light.position.set(0, 2.8 * scaleFactor, 0);
     light.castShadow = false; 
-    light.shadow.mapSize.set(512, 512);
-    light.shadow.bias = -0.005;
     lanterna.add(light);
     if (!window.lanternLights) window.lanternLights = [];
     window.lanternLights.push(light);
@@ -462,63 +477,165 @@ createLanternasNasParedes() {
 
 
 
-    createBirds() {
-        const birdCount = 10; // Número de pássaros
-        const birdSpeed = 0.02; // Velocidade de voo
-    
-        this.birds = new THREE.Group();
-        this.add(this.birds);
-    
-        const birdGeometry = new THREE.ConeGeometry(0.2, 0.5, 8); // Forma simples para o pássaro
-        const birdMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-    
-        for (let i = 0; i < birdCount; i++) {
-            const bird = new THREE.Mesh(birdGeometry, birdMaterial);
-    
-            // Posição inicial aleatória
-            bird.position.set(
-                Math.random() * this.width - this.width / 2,
-                Math.random() * 10 + 5, // Altura entre 5 e 15
-                Math.random() * this.height - this.height / 2
-            );
-    
-            bird.rotation.z = Math.PI / 2; // Rotaciona para parecer um pássaro em voo
-            this.birds.add(bird);
-    
-            // Adiciona uma propriedade para armazenar a direção de movimento
-            bird.userData.direction = new THREE.Vector3(
-                Math.random() * 2 - 1, // Direção X
-                0,
-                Math.random() * 2 - 1 // Direção Z
-            ).normalize();
+    createBird() {
+    // Cria um grupo para o pássaro
+    const birdGroup = new THREE.Group();
+    this.birdGroup = birdGroup; // Salva referência ao grupo do pássaro
+
+    // Propriedades de voo
+    this.birdDirection = new THREE.Vector2(1, 0).normalize(); // direção inicial (eixo X)
+    this.birdSpeed = 2.5; // unidades por segundo
+    this.birdTurnCooldown = 0; // tempo até próxima virada aleatória
+
+    const birdhead = new THREE.SphereGeometry(0.08, 45, 45);
+    const almostblack = new THREE.MeshBasicMaterial({ color: 0x242424 });
+    const sphere = new THREE.Mesh(birdhead, almostblack);
+    sphere.position.set(0, 0, 0);
+    birdGroup.add(sphere);
+
+    const nozzle = new THREE.ConeGeometry(0.05, 0.10, 45);
+    const amarelo = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const cone = new THREE.Mesh(nozzle, amarelo);
+    cone.position.set(0, 0.1, 0);
+    birdGroup.add(cone);
+
+    const birdbody = new THREE.SphereGeometry(0.5, 32, 16);
+    birdbody.rotateZ(Math.PI / 2);
+    birdbody.scale(0.25, 0.35, 0.25);
+    const ellipsoidMesh = new THREE.Mesh(birdbody, almostblack);
+    ellipsoidMesh.position.set(0, -0.2, 0);
+    birdGroup.add(ellipsoidMesh);
+
+    const birdwingD = new THREE.BoxGeometry(0.22, 0.1, 0.05);
+    this.birdwingDMesh = new THREE.Mesh(birdwingD, almostblack); // Salva referência
+    this.birdwingDMesh.position.set(0.2, -0.17, 0);
+    birdGroup.add(this.birdwingDMesh);
+
+    const birdwingE = new THREE.BoxGeometry(0.22, 0.1, 0.05);
+    this.birdwingEMesh = new THREE.Mesh(birdwingE, almostblack); // Salva referência
+    this.birdwingEMesh.position.set(-0.2, -0.17, 0);
+    birdGroup.add(this.birdwingEMesh);
+
+    const birdtail = new THREE.CylinderGeometry(0.018, 0.09, 0.29, 45, 12, 0, 3.1415941);
+    const birdtailMesh = new THREE.Mesh(birdtail, almostblack);
+    birdtailMesh.position.set(0, -0.38, 0.0001);
+    birdGroup.add(birdtailMesh);
+
+    // Rotaciona o grupo inteiro para a horizontal (por exemplo, de pé para deitado)
+    birdGroup.rotation.x = Math.PI / -2;
+
+    // Move o grupo para a posição desejada no mundo
+    birdGroup.position.set(15, 5.8, 0);
+
+    this.add(birdGroup);
+
+    birdGroup.castShadow = true;
+    birdGroup.receiveShadow = true;
+}
+
+// Cria um pássaro individual (igual ao createBird, mas retorna o grupo)
+_createSingleBird() {
+    const birdGroup = new THREE.Group();
+    const birdhead = new THREE.SphereGeometry(0.08, 45, 45);
+    const almostblack = new THREE.MeshBasicMaterial({ color: 0x242424 });
+    const sphere = new THREE.Mesh(birdhead, almostblack);
+    sphere.position.set(0, 0, 0);
+    birdGroup.add(sphere);
+    const nozzle = new THREE.ConeGeometry(0.05, 0.10, 45);
+    const amarelo = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const cone = new THREE.Mesh(nozzle, amarelo);
+    cone.position.set(0, 0.1, 0);
+    birdGroup.add(cone);
+    const birdbody = new THREE.SphereGeometry(0.5, 32, 16);
+    birdbody.rotateZ(Math.PI / 2);
+    birdbody.scale(0.25, 0.35, 0.25);
+    const ellipsoidMesh = new THREE.Mesh(birdbody, almostblack);
+    ellipsoidMesh.position.set(0, -0.2, 0);
+    birdGroup.add(ellipsoidMesh);
+    const birdwingD = new THREE.BoxGeometry(0.22, 0.1, 0.05);
+    const birdwingDMesh = new THREE.Mesh(birdwingD, almostblack);
+    birdwingDMesh.position.set(0.2, -0.17, 0);
+    birdGroup.add(birdwingDMesh);
+    const birdwingE = new THREE.BoxGeometry(0.22, 0.1, 0.05);
+    const birdwingEMesh = new THREE.Mesh(birdwingE, almostblack);
+    birdwingEMesh.position.set(-0.2, -0.17, 0);
+    birdGroup.add(birdwingEMesh);
+    const birdtail = new THREE.CylinderGeometry(0.018, 0.09, 0.29, 45, 12, 0, 3.1415941);
+    const birdtailMesh = new THREE.Mesh(birdtail, almostblack);
+    birdtailMesh.position.set(0, -0.38, 0.0001);
+    birdGroup.add(birdtailMesh);
+    birdGroup.rotation.x = Math.PI / -2;
+    birdGroup.castShadow = true;
+    birdGroup.receiveShadow = true;
+    // Salva referências para animação das asas
+    birdGroup.userData.birdwingDMesh = birdwingDMesh;
+    birdGroup.userData.birdwingEMesh = birdwingEMesh;
+    return birdGroup;
+}
+
+// ======= ANIMAÇÃO DE PÁSSAROS =======
+// Use apenas animateAllBirds(delta, limits, elapsedTime) para animar todos os pássaros.
+// Os métodos abaixo (animateBirdFlight, animateBirdWings) são obsoletos e não devem ser usados.
+
+// Animação do voo do pássaro (OBSOLETO, NÃO USAR)
+animateBirdFlight(delta, limits) {
+    // Método obsoleto. Use animateAllBirds para animar todos os pássaros.
+    return;
+}
+
+// Animação do batimento das asas do pássaro (OBSOLETO, NÃO USAR)
+animateBirdWings(elapsedTime) {
+    // Método obsoleto. Use animateAllBirds para animar todos os pássaros.
+    return;
+}
+
+// Nova animação para todos os pássaros
+animateAllBirds(delta, limits, elapsedTime) {
+    for (const bird of this.birds) {
+        // Movimento
+        bird.userData.turnCooldown -= delta;
+        if (bird.userData.turnCooldown <= 0) {
+            if (Math.random() < 0.1) {
+                const angle = (Math.random() - 0.5) * Math.PI / 2;
+                bird.userData.direction.rotateAround(new THREE.Vector2(0, 0), angle);
+                bird.userData.turnCooldown = 1 + Math.random() * 2;
+            } else {
+                bird.userData.turnCooldown = 0.5 + Math.random();
+            }
         }
-    
-        // Animação dos pássaros
-        const animateBirds = () => {
-            this.birds.children.forEach((bird) => {
-                bird.position.add(bird.userData.direction.clone().multiplyScalar(birdSpeed));
-    
-                // Faz os pássaros "voltarem" ao cenário se saírem dos limites
-                if (bird.position.x > this.width / 2 || bird.position.x < -this.width / 2) {
-                    bird.userData.direction.x *= -1;
-                }
-                if (bird.position.z > this.height / 2 || bird.position.z < -this.height / 2) {
-                    bird.userData.direction.z *= -1;
-                }
-            });
-    
-            requestAnimationFrame(animateBirds);
-        };
-    
-        animateBirds();
+        const move = bird.userData.direction.clone().multiplyScalar(bird.userData.speed * delta);
+        bird.position.x += move.x;
+        bird.position.z += move.y;
+        bird.position.y = 5.8;
+        const margin = 1.5;
+        let flipped = false;
+        if (bird.position.x < limits.minX + margin || bird.position.x > limits.maxX - margin) {
+            bird.userData.direction.x *= -1;
+            bird.position.x = THREE.MathUtils.clamp(bird.position.x, limits.minX + margin, limits.maxX - margin);
+            flipped = true;
+        }
+        if (bird.position.z < limits.minZ + margin || bird.position.z > limits.maxZ - margin) {
+            bird.userData.direction.y *= -1;
+            bird.position.z = THREE.MathUtils.clamp(bird.position.z, limits.minZ + margin, limits.maxZ - margin);
+            flipped = true;
+        }
+        if (flipped) bird.rotation.y += Math.PI;
+        // Nova orientação: remove rotação manual e usa lookAt + rotateX
+        // Calcula a direção de voo no espaço 3D
+        const dir3D = new THREE.Vector3(bird.userData.direction.x, 0, bird.userData.direction.y).normalize();
+        // O pássaro voa sempre na altura y = 5.8, então o alvo é a posição atual + direção
+        const lookTarget = bird.position.clone().add(dir3D);
+        bird.lookAt(lookTarget);
+        // Corrige para que o eixo Y local seja a frente (pois o cone aponta para Y)
+        bird.rotateX(Math.PI / 2);
+        // Batimento das asas
+        if (bird.userData.birdwingDMesh && bird.userData.birdwingEMesh) {
+            const wingFlap = Math.sin(elapsedTime * 8 + bird.position.x) * Math.PI / 3;
+            bird.userData.birdwingDMesh.rotation.z = wingFlap;
+            bird.userData.birdwingEMesh.rotation.z = -wingFlap;
+        }
     }
-
-
-
-
-
-
-
+}
 
     createCandeeiro() {
         // Cria um grupo para o candeeiro
@@ -671,7 +788,7 @@ createLanternasNasParedes() {
         // Adiciona luz dentro do candeeiro
         const light = new THREE.PointLight(0xffcc88, 5, 15, 3);
     light.position.set(0, 1.55, 0);
-    light.castShadow = true; // sombra desligada por defeito
+    light.castShadow = false; // sombra desligada por defeito
     light.shadow.mapSize.set(512, 512); // reduzido para otimizar
     light.shadow.bias = -0.005; // evita artefactos
 
@@ -679,11 +796,6 @@ createLanternasNasParedes() {
 
                 // Guardar referência à luz no próprio objeto do candeeiro
                 candeeiro.light = light;
-
-        // Opcional: vidro mais "brilhante" e sem reação à luz
-        glass1.material = new THREE.MeshBasicMaterial({ color: 0xffe5b4, transparent: true, opacity: 0.1 });
-        glass2.material = new THREE.MeshBasicMaterial({ color: 0xffe5b4, transparent: true, opacity: 0.1 });
-        console.log("✅ Candeeiro criado com luz:", light);
 
 
         return candeeiro;
@@ -693,6 +805,7 @@ createLanternasNasParedes() {
     createCandeeirosNoTerreno() {
         this.candeeiros = new THREE.Group();
         this.add(this.candeeiros);
+        window.candeeiroLights = [];
         for (let i = 0; i < this.candeeiroCount; i++) {
             const candeeiro = this.createCandeeiro();
             // Posição aleatória, evitando bordas
@@ -700,49 +813,11 @@ createLanternasNasParedes() {
             const z = Math.random() * (this.height - 6) - (this.height / 2 - 3);
             candeeiro.position.set(x, 0, z);
             this.candeeiros.add(candeeiro);
+            if (candeeiro.light) {
+            window.candeeiroLights.push(candeeiro.light);
+        }
         }
     }
-    ativarSombrasCandeeirosProximos(posJogador, posInimigo = null) {
-    console.log("🧯 Candeeiros encontrados para verificar:", this.candeeiros.children.length);
-
-    const raio = 8;
-    const personagens = [posJogador];
-    if (posInimigo) personagens.push(posInimigo);
-
-    this.candeeiros.children.forEach((candeeiro, i) => {
-        if (!candeeiro.light) {
-            console.warn(`⚠️ Candeeiro ${i} não tem light`);
-            return;
-        }
-
-        const candeeiroPos = new THREE.Vector3();
-        candeeiro.getWorldPosition(candeeiroPos);
-
-        const perto = personagens.some(p => {
-            const dist = p.distanceTo(candeeiroPos);
-            console.log(`📏 Distância do personagem à luz ${i}: ${dist.toFixed(2)}`);
-            return dist < raio;
-        });
-
-        const estadoAnterior = candeeiro.light.castShadow;
-
-        if (perto !== estadoAnterior) {
-            candeeiro.light.castShadow = perto;
-            candeeiro.light.needsUpdate = true;
-
-            console.log(`💡 Candeeiro ${i} -> castShadow: ${perto}`);
-        } else {
-            console.log(`🟡 Candeeiro ${i} -> já está com castShadow=${estadoAnterior}`);
-        }
-
-        const ativos = this.candeeiros.children.filter(c => c.light?.castShadow).length;
-        console.log(`🔦 Total de candeeiros com sombras ativas: ${ativos}`);
-
-    });
-}
-
-
-
 
     
 
