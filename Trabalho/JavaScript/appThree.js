@@ -63,7 +63,7 @@ function clampCameraPosition(camera, limits) {
     const terrain = new Terrain(50, 50);
     scene.add(terrain);
     terrain.terrain.receiveShadow = true;
-    let lanternsOn = true;
+   
 
 
     // Carregar o texture loader
@@ -116,6 +116,89 @@ const ambientLight = ambient;
 let ambientOn = true;
 let directionalOn = true;
 let hemisphereOn = true;
+
+// Estado global das luzes
+
+let lanternsOn = false;
+window.candeeirosOn = false; // Candeeiros = Spotlights
+
+// Botão de Dia
+document.getElementById('setDay').addEventListener('click', () => {
+    ambientOn = true;
+    directionalOn = true;
+    hemisphereOn = true;
+    lanternsOn = false;
+    lanternLights.forEach(light => light.visible = lanternsOn);
+    window.candeeiroOn = false;
+    window.candeeiroLights?.forEach(light => light.visible = window.candeeiroOn);
+
+
+    // Aplicar estado
+    ambientLight.visible = ambientOn;
+    directionalLights.forEach(light => light.visible = directionalOn);
+    sunHelper.visible = directionalOn;
+    hemisphereLight.visible = hemisphereOn;
+
+    lanternLights.forEach(light => light.visible = lanternsOn);
+    window.candeeiroLights?.forEach(light => light.visible = window.candeeirosOn);
+
+    // Atualizar vidro das lanternas
+    scene.traverse(obj => {
+        if (obj.isMesh && obj.material) {
+            if (obj.material.name === 'LanternaGlass') {
+                obj.material.emissiveIntensity = 0;
+                obj.material.opacity = 0.25;
+                obj.material.transparent = true;
+                obj.material.needsUpdate = true;
+            }
+            if (obj.material.name === 'CandeeiroGlass') {
+                obj.material.emissiveIntensity = 0;
+                obj.material.opacity = 0.25;
+                obj.material.transparent = true;
+                obj.material.needsUpdate = true;
+            }
+        }
+    });
+});
+
+// Botão de Noite
+document.getElementById('setNight').addEventListener('click', () => {
+    ambientOn = true;
+    directionalOn = false;
+    hemisphereOn = false;
+    lanternsOn = true;
+    lanternLights.forEach(light => light.visible = lanternsOn);
+    window.candeeiroOn = true;
+    window.candeeiroLights?.forEach(light => light.visible = window.candeeiroOn);
+
+
+    ambientLight.visible = ambientOn;
+    directionalLights.forEach(light => light.visible = directionalOn);
+    sunHelper.visible = directionalOn;
+    hemisphereLight.visible = hemisphereOn;
+
+    lanternLights.forEach(light => light.visible = lanternsOn);
+    window.candeeiroLights?.forEach(light => light.visible = window.candeeirosOn);
+
+    // Atualizar vidro das lanternas
+    scene.traverse(obj => {
+        if (obj.isMesh && obj.material) {
+            if (obj.material.name === 'LanternaGlass') {
+                obj.material.emissiveIntensity = 0.3;
+                obj.material.opacity = 0.7;
+                obj.material.transparent = true;
+                obj.material.needsUpdate = true;
+            }
+            if (obj.material.name === 'CandeeiroGlass') {
+                obj.material.emissiveIntensity = 0.3;
+                obj.material.opacity = 0.7;
+                obj.material.transparent = true;
+                obj.material.needsUpdate = true;
+            }
+        }
+    });
+});
+
 
 // Event Listeners para os botões
 document.getElementById('toggleAmbient').addEventListener('click', () => {
