@@ -15,9 +15,22 @@
     <script src="./JavaScript/appThree.js" type="module"></script>
 </head>
 <body>
-    <button id="toggleCameraBtn" style="position: absolute; top: 5%; left: 46%; z-index: 1; font-size: 16px; font-weight: bold; color: black; border: none;">
-    Alternar Câmara
-    </button>
+    <!-- Botão para alternar câmera com ícone -->
+<button id="toggleCameraBtn" title="Alternar Câmara" style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+">
+  <img src="images/camera2.png" alt="Alternar Câmara"
+       style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.4);">
+</button>
+
+
 
 
     <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 50px; font-size: 20px; z-index: 100;">
@@ -147,14 +160,55 @@
             window.jogoIniciado = true;
         });
     </script>
-    <div id="lightControls" style="position: absolute; top: 10px; left: 10px; z-index: 1000;">
-  <button id="toggleAmbient">Toggle Ambient</button>
-  <button id="toggleDirectional">Toggle Directional</button>
-  <button id="toggleHemisphere">Toggle Hemisphere</button>
-  <button id="toggleLanterns">Toggle Lanterns</button>
-  <button id="toggleCandeeiros">Toggle Spotlights</button>
+  <!-- Botão com o ícone personalizado -->
+<div style="position: fixed; bottom: 20px; left: 20px; z-index: 1000;">
+  <button onclick="toggleMainMenu()" style="
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  ">
+<img src="images/icon.png" alt="Toggle Light" style="width: 60px; height: 60px;">
+  </button>
 
+  <!-- Menu suspenso -->
+  <div id="lightMenu" style="
+    display: none;
+    margin-top: 10px;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 10px;
+    border-radius: 12px;
+    width: 150px;
+    font-family: sans-serif;
+  ">
+    <button id="setDay" style="width: 100%; margin-bottom: 6px;">🌞 Dia</button>
+    <button id="setNight" style="width: 100%; margin-bottom: 6px;">🌙 Noite</button>
+    <button onclick="toggleAdvanced()" style="width: 100%;">⚙️ Avançado</button>
+
+    <!-- Submenu avançado -->
+    <div id="advancedControls" style="margin-top: 10px; display: none;">
+      <button id="toggleAmbient" style="width: 100%; margin-bottom: 4px;">Ambient</button>
+      <button id="toggleDirectional" style="width: 100%; margin-bottom: 4px;">Directional</button>
+      <button id="toggleHemisphere" style="width: 100%; margin-bottom: 4px;">Hemisphere</button>
+      <button id="toggleLanterns" style="width: 100%; margin-bottom: 4px;">Lanterns</button>
+      <button id="toggleCandeeiros" style="width: 100%;">Spotlights</button>
+    </div>
+  </div>
 </div>
+
+<script>
+  function toggleMainMenu() {
+    const menu = document.getElementById('lightMenu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function toggleAdvanced() {
+    const adv = document.getElementById('advancedControls');
+    adv.style.display = adv.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
 
 </body>
 </html>
