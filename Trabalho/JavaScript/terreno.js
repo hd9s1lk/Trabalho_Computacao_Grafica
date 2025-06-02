@@ -223,12 +223,14 @@ export class Terrain extends THREE.Mesh {
 
         for (let i = 0; i < this.toriiCount; i++) {
             const toriiMaterial = new THREE.MeshStandardMaterial({
-            colormap: this.toriiTextures.colormap,
+            map: this.toriiTextures.colormap, // Use 'map' para textura
             normalMap: this.toriiTextures.normalMap,
             roughnessMap: this.toriiTextures.roughnessMap,
-            displacementmap: this.toriiTextures.displacementmap
-            });
+            displacementMap: this.toriiTextures.displacementMap, // Corrija para 'displacementMap'
+            color: 0xff0000 // Multiplica a textura pelo vermelho
+});
 
+            const vermelho = new THREE.MeshStandardMaterial({ color: 0xff0000 });
             const preto = new THREE.MeshStandardMaterial({ color: 0x222222 });
             const amarelo = new THREE.MeshStandardMaterial({ color: 0xffff00 });
             const altura = 7;
@@ -252,7 +254,7 @@ export class Terrain extends THREE.Mesh {
             coberturaPosteDir.rotation.z = THREE.MathUtils.degToRad(5); // Inclina 5 graus para fora
             this.torii.add(coberturaPosteDir);
 
-            const posteDir = new THREE.Mesh(posteGeo, toriiMaterial);
+            const posteDir = new THREE.Mesh(posteGeo, toriiMaterial, );
             posteDir.position.set(3, altura / 2, 0); // Ajustado para centralizar
             posteDir.rotation.z = THREE.MathUtils.degToRad(5); // Inclina 5 graus para fora
             this.torii.add(posteDir);
@@ -554,7 +556,7 @@ _createSingleBird() {
     sphere.position.set(0, 0, 0);
     birdGroup.add(sphere);
     const nozzle = new THREE.ConeGeometry(0.05, 0.10, 45);
-    const amarelo = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const amarelo = new THREE.MeshBasicMaterial({ color: 0xDAA520 });
     const cone = new THREE.Mesh(nozzle, amarelo);
     cone.position.set(0, 0.1, 0);
     birdGroup.add(cone);
@@ -652,6 +654,7 @@ animateAllBirds(delta, limits, elapsedTime) {
     createCandeeiro() {
         // Cria um grupo para o candeeiro
         const candeeiro = new THREE.Group();
+
 
         // Material vermelho
         const vermelho = new THREE.MeshStandardMaterial({ color: 0xff0000 });
@@ -830,7 +833,4 @@ animateAllBirds(delta, limits, elapsedTime) {
         }
         }
     }
-
-    
-
 }
