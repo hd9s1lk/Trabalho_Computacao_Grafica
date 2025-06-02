@@ -793,8 +793,11 @@ document.getElementById('toggleCandeeiros').addEventListener('click', () => {
 
         renderer.render(scene, activeCamera);
         stats.update();
-        document.getElementById('vidaInimigo').innerText = `Vida Inimigo: ${vidaInimigo}`;
-        document.getElementById('vidaJogador').innerText = `Vida Jogador: ${vidaJogador}`;
+        document.getElementById('vidaJogador').innerText = vidaJogador;
+        document.getElementById('barraVidaJogador').style.width = Math.max(0, vidaJogador) + '%';
+
+        document.getElementById('vidaInimigo').innerText = vidaInimigo;
+        document.getElementById('barraVidaInimigo').style.width = Math.max(0, vidaInimigo) + '%';
 
         if (gameOver) {
         renderer.render(scene, activeCamera);
