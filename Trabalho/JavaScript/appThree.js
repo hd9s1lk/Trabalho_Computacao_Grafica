@@ -59,21 +59,32 @@ function clampCameraPosition(camera, limits) {
 }
 
     window.lanternLights = [];
-    // Terreno
-    const terrain = new Terrain(50, 50);
-    scene.add(terrain);
-    terrain.terrain.receiveShadow = true;
-   
-
 
     // Carregar o texture loader
         const loadertexture = new THREE.TextureLoader();
+        const toriiTextures = {
+        colormap: loadertexture.load('texturas/Leather037_1K-JPG_Color.jpg'),
+        normalMap: loadertexture.load('texturas/Leather037_1K-JPG_NormalGL.jpg'),
+        roughnessMap: loadertexture.load('texturas/Leather037_1K-JPG_Roughness.jpg'),
+        displacementmap: loadertexture.load('texturas/Leather037_1K-JPG_Displacement.jpg')
+        };
 
+
+       
         // Carregar a imagem como textura
         loadertexture.load('./models/ceu-noite2.jpg', function(texture) {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             scene.background = texture;
             });
+
+    // Terreno
+    const terrain = new Terrain(50, 50, toriiTextures);
+    scene.add(terrain);
+    terrain.terrain.receiveShadow = true;
+   
+
+
+    
 
     // Luzes
     renderer.shadowMap.enabled = true;

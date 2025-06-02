@@ -4,7 +4,7 @@ import * as THREE from 'three';
 export class Terrain extends THREE.Mesh {
     #objectMap = new Map();   //variável privada para verificar spawn diferentes de arvores, arbustos e rochas
 
-    constructor(width,height) {
+    constructor(width,height, toriiTexturesParam) {
         super();
         this.width = width;
         this.height = height;
@@ -13,6 +13,7 @@ export class Terrain extends THREE.Mesh {
         this.bushCount = 40;
         this.toriiCount = 1;
         this.candeeiroCount = 10; // Novo: número de candeeiros
+        this.toriiTextures = toriiTexturesParam;
 
         this.createTerrain();
         //this.createTrees();
@@ -221,12 +222,19 @@ export class Terrain extends THREE.Mesh {
         this.add(this.torii);
 
         for (let i = 0; i < this.toriiCount; i++) {
-            const vermelho = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            const toriiMaterial = new THREE.MeshStandardMaterial({
+            colormap: this.toriiTextures.colormap,
+            normalMap: this.toriiTextures.normalMap,
+            roughnessMap: this.toriiTextures.roughnessMap,
+            displacementmap: this.toriiTextures.displacementmap
+            });
+
             const preto = new THREE.MeshStandardMaterial({ color: 0x222222 });
             const amarelo = new THREE.MeshStandardMaterial({ color: 0xffff00 });
             const altura = 7;
 
             const posteGeo = new THREE.BoxGeometry(0.6, 7, 0.6);
+            posteGeo.setAttribute('uv2', posteGeo.attributes.uv);
             const coberturaposteGeo = new THREE.BoxGeometry(0.7, 1.5, 0.7);
 
             const coberturaPosteEsq = new THREE.Mesh(coberturaposteGeo, preto);
@@ -234,7 +242,7 @@ export class Terrain extends THREE.Mesh {
             coberturaPosteEsq.rotation.z = THREE.MathUtils.degToRad(-5); // Inclina 5 graus para fora
             this.torii.add(coberturaPosteEsq);
 
-            const posteEsq = new THREE.Mesh(posteGeo, vermelho);
+            const posteEsq = new THREE.Mesh(posteGeo, toriiMaterial);
             posteEsq.position.set(-3, altura / 2, 0); // Ajustado para centralizar
             posteEsq.rotation.z = THREE.MathUtils.degToRad(-5); // Inclina 5 graus para fora
             this.torii.add(posteEsq);
@@ -244,23 +252,26 @@ export class Terrain extends THREE.Mesh {
             coberturaPosteDir.rotation.z = THREE.MathUtils.degToRad(5); // Inclina 5 graus para fora
             this.torii.add(coberturaPosteDir);
 
-            const posteDir = new THREE.Mesh(posteGeo, vermelho);
+            const posteDir = new THREE.Mesh(posteGeo, toriiMaterial);
             posteDir.position.set(3, altura / 2, 0); // Ajustado para centralizar
             posteDir.rotation.z = THREE.MathUtils.degToRad(5); // Inclina 5 graus para fora
             this.torii.add(posteDir);
 
             const vigaGeo = new THREE.BoxGeometry(8, 0.6, 1);
-            const viga = new THREE.Mesh(vigaGeo, vermelho);
+            vigaGeo.setAttribute('uv2', vigaGeo.attributes.uv);
+            const viga = new THREE.Mesh(vigaGeo, toriiMaterial);
             viga.position.set(0, altura - 0.3, 0); // Ajustado para centralizar
             this.torii.add(viga);
 
             const vigaGeomeio = new THREE.BoxGeometry(8, 0.4, 1);
-            const vigameio = new THREE.Mesh(vigaGeomeio, vermelho);
+            vigaGeomeio.setAttribute('uv2', vigaGeomeio.attributes.uv);
+            const vigameio = new THREE.Mesh(vigaGeomeio, toriiMaterial);
             vigameio.position.set(0, altura - 1.4, 0); // Ajustado para centralizar
             this.torii.add(vigameio);
 
             const vigaGeoSuporte = new THREE.BoxGeometry(0.5, 0.85, 1);
-            const vigaSuporte = new THREE.Mesh(vigaGeoSuporte, vermelho);
+            vigaGeoSuporte.setAttribute('uv2', vigaGeoSuporte.attributes.uv);
+            const vigaSuporte = new THREE.Mesh(vigaGeoSuporte, toriiMaterial);
             vigaSuporte.position.set(0, altura - 0.78, 0); // Ajustado para centralizar
             this.torii.add(vigaSuporte);
 
@@ -277,6 +288,7 @@ export class Terrain extends THREE.Mesh {
 
             // Cria uma geometria subdividida no eixo X
             const topoGeo = new THREE.BoxGeometry(largura, alturaTopo, profundidade, segmentos, 1, 1);
+            topoGeo.setAttribute('uv2', topoGeo.attributes.uv);
 
             // Curvatura parabólica: define o "pico" da curva no centro
             const intensidadeCurvatura = 0.2; // ajuste conforme preferir
